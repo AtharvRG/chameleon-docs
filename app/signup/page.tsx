@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { registerUser } from "@/actions/auth-actions";
 import { ArrowRight, Layers } from "lucide-react";
 import MagneticButton from "@/components/ui/magnetic-button";
+import Image from "next/image";
 
 export default function SignupPage() {
     const [error, setError] = useState("");
@@ -81,13 +82,15 @@ export default function SignupPage() {
 
             {/* Right Side - Editorial Art */}
             <div className="hidden w-1/2 bg-secondary lg:block relative overflow-hidden">
-                <div className="absolute inset-0 bg-black/10" />
-                <img
+                <div className="absolute inset-0 bg-black/10 z-10" />
+                <Image
                     src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
                     alt="Abstract Art"
-                    className="h-full w-full object-cover grayscale contrast-125"
+                    fill
+                    className="object-cover grayscale contrast-125"
+                    priority
                 />
-                <div className="absolute bottom-12 left-12 right-12 text-white">
+                <div className="absolute bottom-12 left-12 right-12 text-white z-20">
                     <div className="flex items-center gap-2 mb-4">
                         <Layers className="h-5 w-5 text-accent" />
                         <span className="text-sm font-medium tracking-wider uppercase opacity-80">Chameleon Docs (v1 Beta)</span>

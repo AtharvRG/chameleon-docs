@@ -149,13 +149,14 @@ export function SettingsClient({ user }: SettingsClientProps) {
     const [isDeleting, setIsDeleting] = useState(false);
 
     // Preferences state
-    const [preferencesData, setPreferencesData] = useState({
+    const [preferencesData, setPreferencesData] = useState<ISimplificationPreferences>({
         techBackground: user.simplificationPreferences?.techBackground || "beginner",
         primaryRole: user.simplificationPreferences?.primaryRole || "",
         learningStyle: user.simplificationPreferences?.learningStyle || "detailed",
         experienceWithDocs: user.simplificationPreferences?.experienceWithDocs || "sometimes",
         preferredExplanationDepth: user.simplificationPreferences?.preferredExplanationDepth || "moderate",
         defaultSimplificationLevel: user.simplificationPreferences?.defaultSimplificationLevel || "standard",
+        hasCompletedOnboarding: user.simplificationPreferences?.hasCompletedOnboarding || false,
     });
     const [preferencesError, setPreferencesError] = useState("");
     const [preferencesSaving, setPreferencesSaving] = useState(false);
@@ -166,7 +167,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
         // Remove all theme classes first
         const themeClasses = ['theme-indigo', 'theme-violet', 'theme-blue', 'theme-cyan', 'theme-teal', 'theme-green', 'theme-orange', 'theme-rose'];
         document.documentElement.classList.remove(...themeClasses);
-        
+
         // Add the current accent color theme class
         document.documentElement.classList.add(`theme-${accentColor}`);
     }, [accentColor]);
@@ -174,7 +175,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
     // Handle profile save
     const handleSaveProfile = async () => {
         setProfileError("");
-        
+
         if (!profileData.name.trim()) {
             setProfileError("Name is required");
             return;
@@ -282,7 +283,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
     const handleSavePreferences = async () => {
         setPreferencesError("");
         setPreferencesSaving(true);
-        
+
         try {
             const result = await updatePreferences({
                 techBackground: preferencesData.techBackground as ISimplificationPreferences["techBackground"],
@@ -302,7 +303,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
         } catch (error) {
             setPreferencesError("An error occurred while saving preferences");
         }
-        
+
         setPreferencesSaving(false);
     };
 
@@ -371,7 +372,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                         {/* Profile Information */}
                         <GlassCard className="p-6">
                             <h2 className="text-lg font-semibold mb-6">Profile Information</h2>
-                            
+
                             {saveSuccess && successMessage && (
                                 <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-sm flex items-center gap-2">
                                     <Check className="h-4 w-4" />
@@ -421,8 +422,8 @@ export function SettingsClient({ user }: SettingsClientProps) {
                             </div>
 
                             <div className="mt-6 flex justify-end gap-3">
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     onClick={() => setProfileData({ name: user.name, email: user.email })}
                                 >
                                     Reset
@@ -460,12 +461,11 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 {SIMPLIFICATION_LEVELS.map((level) => (
                                     <button
                                         key={level.id}
-                                        onClick={() => setPreferencesData(prev => ({ ...prev, defaultSimplificationLevel: level.id }))}
-                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${
-                                            preferencesData.defaultSimplificationLevel === level.id
-                                                ? "border-primary bg-primary/10"
-                                                : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
-                                        } focus:outline-none focus:ring-1 focus:ring-primary`}
+                                        onClick={() => setPreferencesData(prev => ({ ...prev, defaultSimplificationLevel: level.id as SimplificationLevel }))}
+                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${preferencesData.defaultSimplificationLevel === level.id
+                                            ? "border-primary bg-primary/10"
+                                            : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
+                                            } focus:outline-none focus:ring-1 focus:ring-primary`}
                                     >
                                         <span className={`font-medium ${preferencesData.defaultSimplificationLevel === level.id ? "text-primary" : "group-hover:text-primary"} transition-colors`}>
                                             {level.label}
@@ -486,12 +486,11 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 {TECH_BACKGROUNDS.map((option) => (
                                     <button
                                         key={option.id}
-                                        onClick={() => setPreferencesData(prev => ({ ...prev, techBackground: option.id }))}
-                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${
-                                            preferencesData.techBackground === option.id
-                                                ? "border-primary bg-primary/10"
-                                                : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
-                                        } focus:outline-none focus:ring-1 focus:ring-primary`}
+                                        onClick={() => setPreferencesData(prev => ({ ...prev, techBackground: option.id as ISimplificationPreferences["techBackground"] }))}
+                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${preferencesData.techBackground === option.id
+                                            ? "border-primary bg-primary/10"
+                                            : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
+                                            } focus:outline-none focus:ring-1 focus:ring-primary`}
                                     >
                                         <span className={`font-medium ${preferencesData.techBackground === option.id ? "text-primary" : "group-hover:text-primary"} transition-colors`}>
                                             {option.label}
@@ -512,12 +511,11 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 {LEARNING_STYLES.map((option) => (
                                     <button
                                         key={option.id}
-                                        onClick={() => setPreferencesData(prev => ({ ...prev, learningStyle: option.id }))}
-                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${
-                                            preferencesData.learningStyle === option.id
-                                                ? "border-primary bg-primary/10"
-                                                : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
-                                        } focus:outline-none focus:ring-1 focus:ring-primary`}
+                                        onClick={() => setPreferencesData(prev => ({ ...prev, learningStyle: option.id as ISimplificationPreferences["learningStyle"] }))}
+                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${preferencesData.learningStyle === option.id
+                                            ? "border-primary bg-primary/10"
+                                            : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
+                                            } focus:outline-none focus:ring-1 focus:ring-primary`}
                                     >
                                         <span className={`font-medium ${preferencesData.learningStyle === option.id ? "text-primary" : "group-hover:text-primary"} transition-colors`}>
                                             {option.label}
@@ -538,12 +536,11 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 {DOC_EXPERIENCE.map((option) => (
                                     <button
                                         key={option.id}
-                                        onClick={() => setPreferencesData(prev => ({ ...prev, experienceWithDocs: option.id }))}
-                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${
-                                            preferencesData.experienceWithDocs === option.id
-                                                ? "border-primary bg-primary/10"
-                                                : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
-                                        } focus:outline-none focus:ring-1 focus:ring-primary`}
+                                        onClick={() => setPreferencesData(prev => ({ ...prev, experienceWithDocs: option.id as ISimplificationPreferences["experienceWithDocs"] }))}
+                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${preferencesData.experienceWithDocs === option.id
+                                            ? "border-primary bg-primary/10"
+                                            : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
+                                            } focus:outline-none focus:ring-1 focus:ring-primary`}
                                     >
                                         <span className={`font-medium ${preferencesData.experienceWithDocs === option.id ? "text-primary" : "group-hover:text-primary"} transition-colors`}>
                                             {option.label}
@@ -564,12 +561,11 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                 {EXPLANATION_DEPTHS.map((option) => (
                                     <button
                                         key={option.id}
-                                        onClick={() => setPreferencesData(prev => ({ ...prev, preferredExplanationDepth: option.id }))}
-                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${
-                                            preferencesData.preferredExplanationDepth === option.id
-                                                ? "border-primary bg-primary/10"
-                                                : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
-                                        } focus:outline-none focus:ring-1 focus:ring-primary`}
+                                        onClick={() => setPreferencesData(prev => ({ ...prev, preferredExplanationDepth: option.id as ISimplificationPreferences["preferredExplanationDepth"] }))}
+                                        className={`group flex w-full flex-col items-start rounded-lg border p-4 text-left transition-all ${preferencesData.preferredExplanationDepth === option.id
+                                            ? "border-primary bg-primary/10"
+                                            : "border-white/10 bg-white/5 hover:border-primary/50 hover:bg-primary/5"
+                                            } focus:outline-none focus:ring-1 focus:ring-primary`}
                                     >
                                         <span className={`font-medium ${preferencesData.preferredExplanationDepth === option.id ? "text-primary" : "group-hover:text-primary"} transition-colors`}>
                                             {option.label}
@@ -588,7 +584,7 @@ export function SettingsClient({ user }: SettingsClientProps) {
                                     Preferences saved successfully!
                                 </div>
                             )}
-                            
+
                             {preferencesError && (
                                 <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
                                     {preferencesError}

@@ -47,12 +47,12 @@ function WordFlipDisplay({
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
     const currentDirectionRef = useRef(direction);
     const wrappedSpansRef = useRef<HTMLSpanElement[]>([]);
-    
+
     // Refs to track latest content values for polling
     const reimaginedContentRef = useRef(reimaginedContent);
     const pendingContentRef = useRef(pendingContent);
     const originalContentRef = useRef(originalContent);
-    
+
     // Keep refs updated
     useEffect(() => {
         reimaginedContentRef.current = reimaginedContent;
@@ -107,36 +107,36 @@ function WordFlipDisplay({
     // Wrap text nodes in spans for letter animation (only text, not code blocks)
     const wrapTextNodes = useCallback((element: HTMLElement): HTMLSpanElement[] => {
         const spans: HTMLSpanElement[] = [];
-        
+
         const processNode = (node: Node) => {
             // Skip code blocks and pre elements - don't animate their content
             if (node.nodeType === Node.ELEMENT_NODE) {
                 const el = node as HTMLElement;
                 const tagName = el.tagName.toLowerCase();
-                
+
                 // Skip these elements entirely
-                if (tagName === 'pre' || tagName === 'code' || tagName === 'svg' || 
+                if (tagName === 'pre' || tagName === 'code' || tagName === 'svg' ||
                     el.classList.contains('syntax-highlighter') ||
                     el.closest('pre') || el.closest('code')) {
                     return;
                 }
-                
+
                 // Process child nodes
                 Array.from(node.childNodes).forEach(processNode);
                 return;
             }
-            
+
             // Process text nodes
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent || '';
                 if (text.trim().length === 0) return;
-                
+
                 // Check if this text node is inside code/pre
                 const parent = node.parentNode as HTMLElement;
                 if (parent?.closest('pre') || parent?.closest('code')) return;
-                
+
                 const fragment = document.createDocumentFragment();
-                
+
                 for (const char of text) {
                     if (char === ' ' || char === '\n' || char === '\t') {
                         fragment.appendChild(document.createTextNode(char));
@@ -149,11 +149,11 @@ function WordFlipDisplay({
                         spans.push(span);
                     }
                 }
-                
+
                 node.parentNode?.replaceChild(fragment, node);
             }
         };
-        
+
         Array.from(element.childNodes).forEach(processNode);
         return spans;
     }, []);
@@ -161,7 +161,7 @@ function WordFlipDisplay({
     // Calculate wave delays from top-left
     const calculateWaveDelays = useCallback((spans: HTMLSpanElement[], container: HTMLElement, maxDuration: number): number[] => {
         if (spans.length === 0) return [];
-        
+
         const containerRect = container.getBoundingClientRect();
         const distances = spans.map(span => {
             const rect = span.getBoundingClientRect();
@@ -191,10 +191,10 @@ function WordFlipDisplay({
                 onPhaseComplete?.("flipping-out");
                 return;
             }
-            
+
             const spans = wrapTextNodes(contentRef.current);
             wrappedSpansRef.current = spans;
-            
+
             if (spans.length === 0) {
                 // No text to animate, just fade out
                 contentRef.current.style.transition = 'opacity 0.3s ease';
@@ -271,13 +271,13 @@ function WordFlipDisplay({
         cleanup();
         setShowLoader(false);
         setDisplayContent(contentToShow);
-        
+
         // Keep content hidden initially via CSS opacity on container
         if (contentRef.current) {
             contentRef.current.style.opacity = '0';
         }
         setContentVisible(true); // Make container "visible" but opacity 0
-        
+
         const startFlipIn = () => {
             if (!contentRef.current) {
                 setContentVisible(true);
@@ -287,7 +287,7 @@ function WordFlipDisplay({
 
             const spans = wrapTextNodes(contentRef.current);
             wrappedSpansRef.current = spans;
-            
+
             if (spans.length === 0) {
                 // No text spans, just fade in the whole thing
                 contentRef.current.style.transition = 'opacity 0.3s ease';
@@ -307,7 +307,7 @@ function WordFlipDisplay({
 
             // Force reflow to apply hidden styles
             void contentRef.current.offsetHeight;
-            
+
             // NOW show the container (spans are already hidden)
             contentRef.current.style.opacity = '1';
 
@@ -355,14 +355,14 @@ function WordFlipDisplay({
 
     // STAGE 3: Flip IN animation - Letter by letter
     const flipInStartedRef = useRef(false);
-    
+
     useEffect(() => {
         if (phase !== "flipping-in") {
             // Reset flag when not in flipping-in phase
             flipInStartedRef.current = false;
             return;
         }
-        
+
         // Guard against multiple invocations
         if (flipInStartedRef.current) {
             console.log("Flip-in: already started, skipping");
@@ -370,34 +370,34 @@ function WordFlipDisplay({
         }
 
         const contentToShow =
-          direction === "forward" ? effectiveReimaginedContent : originalContent;
+            direction === "forward" ? effectiveReimaginedContent : originalContent;
 
         // If content is not ready yet, wait for it via polling using refs
         if (!contentToShow || contentToShow.trim().length === 0) {
-            console.log("Flip-in: content not ready, polling...", { 
-                direction, 
-                reimaginedContent: reimaginedContent?.length || 0, 
+            console.log("Flip-in: content not ready, polling...", {
+                direction,
+                reimaginedContent: reimaginedContent?.length || 0,
                 pendingContent: pendingContent?.length || 0,
                 effectiveReimaginedContent: effectiveReimaginedContent?.length || 0
             });
-            
+
             // Poll for content every 50ms for up to 2 seconds using REFS
             let attempts = 0;
             const maxAttempts = 40;
             const pollInterval = setInterval(() => {
                 attempts++;
                 // Use refs to get latest values
-                const currentContent = direction === "forward" 
+                const currentContent = direction === "forward"
                     ? (reimaginedContentRef.current || pendingContentRef.current || "")
                     : originalContentRef.current;
-                
+
                 console.log(`Flip-in poll attempt ${attempts}:`, {
                     direction,
                     refReimaginedLen: reimaginedContentRef.current?.length || 0,
                     refPendingLen: pendingContentRef.current?.length || 0,
                     currentContentLen: currentContent?.length || 0
                 });
-                    
+
                 if (currentContent && currentContent.trim().length > 0) {
                     clearInterval(pollInterval);
                     console.log("Flip-in: content arrived after polling, length:", currentContent.length);
@@ -409,7 +409,7 @@ function WordFlipDisplay({
                     onPhaseComplete?.("flipping-in"); // Give up and complete
                 }
             }, 50);
-            
+
             timeoutRef.current = pollInterval as unknown as NodeJS.Timeout;
             return;
         }
@@ -417,7 +417,7 @@ function WordFlipDisplay({
         console.log("Flip-in: starting immediately with content length:", contentToShow.length);
         flipInStartedRef.current = true;  // Mark as started
         runFlipInAnimation(contentToShow);
-        
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [phase, direction, effectiveReimaginedContent, originalContent, runFlipInAnimation, onPhaseComplete]);
     // Note: We intentionally exclude reimaginedContent and pendingContent from deps
@@ -430,8 +430,8 @@ function WordFlipDisplay({
     }, [phase]);
 
     return (
-        <div 
-            ref={containerRef} 
+        <div
+            ref={containerRef}
             className="relative min-h-[200px]"
             style={{ perspective: "1200px" }}
         >
@@ -461,10 +461,10 @@ function WordFlipDisplay({
                         <div className="flex flex-col items-center gap-3">
                             <Loader2 className="h-8 w-8 text-purple-500 animate-spin" />
                             <span className="text-sm text-muted-foreground">
-                                {direction === "reverse" 
-                                    ? "Reverting..." 
-                                    : phase === "waiting-for-content" 
-                                        ? "AI is reimagining..." 
+                                {direction === "reverse"
+                                    ? "Reverting..."
+                                    : phase === "waiting-for-content"
+                                        ? "AI is reimagining..."
                                         : "Transforming..."
                                 }
                             </span>
@@ -500,7 +500,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
     const [reimaginedContentMap, setReimaginedContentMap] = useState<Record<string, string>>({});
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isStreaming, setIsStreaming] = useState(false);
-    
+
     // Simplification level state
     const [simplificationLevel, setSimplificationLevel] = useState<SimplificationLevel>("standard");
     const [showLevelDropdown, setShowLevelDropdown] = useState(false);
@@ -517,7 +517,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
 
     // Sidebar State
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-    
+
     // Ref for dropdown click-outside detection
     const levelDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -528,11 +528,11 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
                 setShowLevelDropdown(false);
             }
         };
-        
+
         if (showLevelDropdown) {
             document.addEventListener("mousedown", handleClickOutside);
         }
-        
+
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
@@ -555,7 +555,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
         const initialExpanded: Record<string, boolean> = {};
         sections.forEach(s => initialExpanded[s] = true);
         setExpandedSections(initialExpanded);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sections.length]);
 
     const toggleSection = (section: string) => {
@@ -581,7 +581,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
     // Ref to track if content is ready (for coordinating with flip-out completion)
     const contentReadyRef = useRef(false);
     const pendingContentRef = useRef<string>("");
-    
+
     // State for pending content - this WILL trigger re-renders unlike the ref
     const [pendingContentState, setPendingContentState] = useState<string>("");
 
@@ -596,7 +596,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
     // Phase completion handler - advances through animation phases
     const handlePhaseComplete = useCallback((completedPhase: AnimationPhase) => {
         console.log("Phase complete:", completedPhase, "direction:", animationDirection, "contentReady:", contentReadyRef.current);
-        
+
         switch (completedPhase) {
             case "flipping-out":
                 // After flip out, check if content is ready
@@ -648,14 +648,14 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
         // ALWAYS reimagine the ORIGINAL content (not the current reimagined)
         // Start with flip-out from current view
         const startingMode = mode;
-        
+
         // IMMEDIATELY start the flip-out animation
         setAnimationDirection("forward");
         setIsAnimating(true);
         setIsLoading(true);
         contentReadyRef.current = false;
         pendingContentRef.current = "";
-        
+
         // If we're in reimagined mode, first flip to original then to new reimagined
         if (startingMode === "reimagined") {
             setMode("original");
@@ -681,7 +681,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
 
             if (reader) {
                 setIsStreaming(true);
-                
+
                 // Collect all the streamed content
                 while (true) {
                     const { done, value } = await reader.read();
@@ -691,15 +691,15 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
                 }
 
                 setIsStreaming(false);
-                
+
                 // Content is ready - store it in BOTH ref and state
                 pendingContentRef.current = fullContent;
                 setPendingContentState(fullContent); // This will trigger re-render!
                 contentReadyRef.current = true;
-                
+
                 // Also set the reimagined content immediately
                 setCurrentReimaginedContent(fullContent);
-                
+
                 // If we're still waiting for content, trigger the next phase
                 setPhase(currentPhase => {
                     if (currentPhase === "waiting-for-content") {
@@ -721,7 +721,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
     // Toggle between original and reimagined content (no API call)
     const handleToggle = () => {
         if (!hasReimaginedContent || isAnimating) return;
-        
+
         if (mode === "original") {
             // Switch to reimagined
             setAnimationDirection("forward");
@@ -869,7 +869,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
                                     </span>
                                     <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${showLevelDropdown ? 'rotate-180' : ''}`} />
                                 </button>
-                                
+
                                 <AnimatePresence>
                                     {showLevelDropdown && (
                                         <motion.div
@@ -886,11 +886,10 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
                                                             setSimplificationLevel(level.id);
                                                             setShowLevelDropdown(false);
                                                         }}
-                                                        className={`w-full flex flex-col items-start px-3 py-2 rounded-md text-left transition-all ${
-                                                            simplificationLevel === level.id
+                                                        className={`w-full flex flex-col items-start px-3 py-2 rounded-md text-left transition-all ${simplificationLevel === level.id
                                                                 ? "bg-primary/10 text-primary"
                                                                 : "hover:bg-white/5"
-                                                        }`}
+                                                            }`}
                                                     >
                                                         <span className="font-medium text-sm">{level.label}</span>
                                                         <span className="text-xs text-muted-foreground">{level.description}</span>
@@ -911,7 +910,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
                                     disabled={isAnimating || isLoading || isStreaming}
                                 />
                             )}
-                            
+
                             {/* Reimagine Button - always reimagines from original */}
                             <ReimagineButton
                                 onClick={handleReimagine}
@@ -946,7 +945,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
                             <div className="relative">
                                 {/* Reimagined badge */}
                                 <AnimatePresence>
-                                    {(mode === "reimagined" || (isAnimating && animationDirection === "forward")) && phase !== "loading" && (
+                                    {(mode === "reimagined" || (isAnimating && animationDirection === "forward")) && phase !== "showing-loader" && (
                                         <motion.div
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
@@ -964,7 +963,7 @@ export function ReaderClient({ project, pages, activePage }: { project: any, pag
                                                 <Sparkles className="h-3 w-3 text-purple-400" />
                                             </motion.div>
                                             <span className="text-xs font-bold uppercase tracking-wider text-purple-400">
-                                                {isAnimating 
+                                                {isAnimating
                                                     ? (animationDirection === "reverse" ? "Reverting..." : "Transforming...")
                                                     : "Reimagined"
                                                 }

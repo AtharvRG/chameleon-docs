@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 import MagneticButton from "@/components/ui/magnetic-button";
+import Image from "next/image";
 
 export default function LoginPage() {
     // @ts-ignore - Types for useFormState in Next.js 14 can be strict regarding initial state
@@ -70,13 +71,15 @@ export default function LoginPage() {
 
             {/* Right Side - Editorial Art */}
             <div className="hidden w-1/2 bg-secondary lg:block relative overflow-hidden">
-                <div className="absolute inset-0 bg-black/10" />
-                <img
+                <div className="absolute inset-0 bg-black/10 z-10" />
+                <Image
                     src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=2670&auto=format&fit=crop"
                     alt="Abstract Art"
-                    className="h-full w-full object-cover grayscale contrast-125"
+                    fill
+                    className="object-cover grayscale contrast-125"
+                    priority
                 />
-                <div className="absolute bottom-12 left-12 right-12 text-white">
+                <div className="absolute bottom-12 left-12 right-12 text-white z-20">
                     <div className="flex items-center gap-2 mb-4">
                         <Sparkles className="h-5 w-5 text-accent" />
                         <span className="text-sm font-medium tracking-wider uppercase opacity-80">Chameleon Docs (v1 Beta)</span>

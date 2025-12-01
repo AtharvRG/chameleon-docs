@@ -7,6 +7,9 @@ import { DashboardClient } from "./dashboard-client";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+    // ARTIFICIAL DELAY: Wait 3 seconds to demonstrate the loading animation
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     // Check if user has completed onboarding
     const onboardingComplete = await hasCompletedOnboarding();
     if (!onboardingComplete) {

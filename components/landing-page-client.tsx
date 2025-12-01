@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, Github, Star, Anchor } from "lucide-react";
@@ -102,10 +103,10 @@ export default function LandingPageClient({ session }: { session: any }) {
                     {/* Floating Images (Parallax) */}
                     <motion.div style={{ y }} className="absolute inset-0 z-0 pointer-events-none">
                         <div className="absolute top-[20%] left-[5%] w-[25vw] aspect-[3/4] overflow-hidden rounded-lg opacity-80 grayscale hover:grayscale-0 transition-all duration-700">
-                            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" alt="Abstract" className="h-full w-full object-cover" />
+                            <Image src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" alt="Abstract" fill className="object-cover" />
                         </div>
                         <div className="absolute bottom-[10%] right-[5%] w-[30vw] aspect-[4/3] overflow-hidden rounded-lg opacity-80 grayscale hover:grayscale-0 transition-all duration-700">
-                            <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=2668&auto=format&fit=crop" alt="Minimal" className="h-full w-full object-cover" />
+                            <Image src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=2668&auto=format&fit=crop" alt="Minimal" fill className="object-cover" />
                         </div>
                     </motion.div>
 
@@ -156,7 +157,7 @@ export default function LandingPageClient({ session }: { session: any }) {
                 <div className="grid grid-cols-1 gap-y-12 md:grid-cols-12 md:gap-x-12 items-center">
                     <div className="md:col-span-7">
                         <motion.div style={{ y: featureY }} className="relative aspect-[16/9] overflow-hidden rounded-sm bg-secondary">
-                            <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2670&auto=format&fit=crop" alt="Office" className="h-full w-full object-cover transition-transform duration-700" />
+                            <Image src="https://images.pexels.com/photos/17709307/pexels-photo-17709307/free-photo-of-spiral-modern-structure.jpeg" alt="Office" fill className="object-cover transition-transform duration-700" />
                         </motion.div>
                     </div>
                     <div className="md:col-span-5 flex flex-col justify-center space-y-6">
@@ -183,7 +184,7 @@ export default function LandingPageClient({ session }: { session: any }) {
                     </div>
                     <div className="md:col-span-7">
                         <motion.div style={{ y: featureYReverse }} className="relative aspect-[16/9] overflow-hidden rounded-sm bg-secondary">
-                            <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2500&auto=format&fit=crop" alt="Design" className="h-full w-full object-cover transition-transform duration-700" />
+                            <Image src="https://images.pexels.com/photos/4930236/pexels-photo-4930236.jpeg" alt="Design" fill className="object-cover transition-transform duration-700" />
                         </motion.div>
                     </div>
                 </div>

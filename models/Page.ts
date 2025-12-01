@@ -5,6 +5,7 @@ export interface IPage extends Document {
     title: string;
     slug: string;
     content: string;
+    section?: string;
     isPublished: boolean;
     order: number;
     views: number;
@@ -18,6 +19,7 @@ const PageSchema = new Schema<IPage>(
         title: { type: String, required: true },
         slug: { type: String, required: true },
         content: { type: String, default: "" },
+        section: { type: String, default: "" },
         isPublished: { type: Boolean, default: false },
         order: { type: Number, default: 0 },
         views: { type: Number, default: 0 },

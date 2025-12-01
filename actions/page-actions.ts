@@ -21,6 +21,7 @@ export async function getProjectPages(projectSlug: string) {
             title: p.title,
             slug: p.slug,
             status: p.isPublished ? "Published" : "Draft",
+            section: p.section || "",
             updatedAt: p.updatedAt.toISOString(),
         }));
     } catch (error) {
@@ -48,6 +49,7 @@ export async function getPageContent(projectSlug: string, pageSlug: string) {
             title: page.title,
             slug: page.slug,
             content: page.content,
+            section: page.section || "",
             isPublished: page.isPublished,
         };
     } catch (error) {
@@ -71,7 +73,7 @@ export async function updatePageContent(pageId: string, content: string) {
 }
 
 // 4. Create New Page
-export async function createPage(projectSlug: string, title: string) {
+export async function createPage(projectSlug: string, title: string, section: string = "") {
     try {
         await connectToDB();
         const project = await Project.findOne({ slug: projectSlug });
@@ -84,12 +86,37 @@ export async function createPage(projectSlug: string, title: string) {
             title,
             slug,
             content: "",
-            isPublished: false
+            section,
+            isPublished: false // Default to draft
         });
 
         revalidatePath(`/dashboard/${projectSlug}`);
         return { success: true };
     } catch (error) {
         return { success: false, error: "Failed to create page" };
+    }
+}
+
+// 5. Publish Page
+export async function publishPage(pageId: string, isPublished: boolean) {
+    try {
+        await connectToDB();
+        await Page.findByIdAndUpdate(pageId, { isPublished });
+
+        // Revalidate paths might be tricky without project slug, but usually we refresh client side
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: "Failed to update status" };
+    }
+}
+
+// 6. Update Page Section
+export async function updatePageSection(pageId: string, section: string) {
+    try {
+        await connectToDB();
+        await Page.findByIdAndUpdate(pageId, { section });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: "Failed to update section" };
     }
 }

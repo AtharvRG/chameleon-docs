@@ -98,7 +98,7 @@ export default async function ReaderPage({
                     <div className="space-y-2">
                         <h1 className="font-heading text-2xl font-bold">No Pages Found</h1>
                         <p className="text-muted-foreground max-w-sm">
-                            This project exists, but it doesn't have any documentation pages yet.
+                            This project exists, but it doesn&apos;t have any documentation pages yet.
                         </p>
                     </div>
                     <Link href={`/dashboard/${project.slug}`}>

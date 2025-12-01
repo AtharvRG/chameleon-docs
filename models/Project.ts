@@ -6,6 +6,7 @@ export interface IProject extends Document {
     description?: string;
     ownerEmail: string;
     isPublic: boolean;
+    emoji?: string;
     theme: {
         color: string;
         font: string;
@@ -14,6 +15,9 @@ export interface IProject extends Document {
     updatedAt: Date;
 }
 
+// Default emojis for random selection
+const DEFAULT_EMOJIS = ['📚', '📖', '📝', '✨', '🚀', '💡', '🎯', '⚡', '🔥', '💎', '🌟', '📋', '🗂️', '📁', '🎨', '🔧', '⚙️', '🏗️', '📊', '🧩'];
+
 const ProjectSchema = new Schema<IProject>(
     {
         name: { type: String, required: true },
@@ -21,8 +25,12 @@ const ProjectSchema = new Schema<IProject>(
         description: { type: String },
         ownerEmail: { type: String, required: true, index: true },
         isPublic: { type: Boolean, default: false },
+        emoji: { 
+            type: String, 
+            default: () => DEFAULT_EMOJIS[Math.floor(Math.random() * DEFAULT_EMOJIS.length)]
+        },
         theme: {
-            color: { type: String, default: "indigo" },
+            color: { type: String, default: "#6366f1" },
             font: { type: String, default: "Inter" },
         },
     },

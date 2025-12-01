@@ -13,7 +13,7 @@ export function Progress({ value, className }: ProgressProps) {
     return (
         <div className={cn("h-2 w-full overflow-hidden rounded-full bg-secondary/50", className)}>
             <motion.div
-                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                className="h-full bg-accent"
                 initial={{ width: 0 }}
                 animate={{ width: `${value}%` }}
                 transition={{ duration: 0.5, ease: "easeOut" }}

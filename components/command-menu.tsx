@@ -65,7 +65,7 @@ export function CommandMenu() {
                 onClick={() => setOpen(false)}
             />
 
-            <div className="relative z-50 w-full max-w-lg overflow-hidden rounded-xl border border-white/10 bg-[#0F0F0F] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="relative z-50 w-full max-w-lg overflow-hidden rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#0F0F0F] shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                 <Command className="border-none bg-transparent">
                     <CommandInput ref={inputRef} placeholder="Type a command or search..." />
                     <CommandList>

@@ -19,8 +19,11 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)", ...fontFamily.sans],
-        heading: ["var(--font-space)", ...fontFamily.sans],
+        sans: ["var(--font-jakarta)", ...fontFamily.sans],
+        heading: ["var(--font-cormorant)", ...fontFamily.serif],
+        tech: ["var(--font-space)", ...fontFamily.sans],
+        modern: ["var(--font-manrope)", ...fontFamily.sans],
+        clean: ["var(--font-inter)", ...fontFamily.sans],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -40,11 +43,21 @@ const config: Config = {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
-        glass: {
-          100: "rgba(255, 255, 255, 0.1)",
-          200: "rgba(255, 255, 255, 0.2)",
-          300: "rgba(255, 255, 255, 0.3)",
-          border: "rgba(255, 255, 255, 0.1)",
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
       },
       borderRadius: {
@@ -61,18 +74,25 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        vibrate: {
-          "0%, 100%": { transform: "translate(0)" },
-          "20%": { transform: "translate(-2px, 2px)" },
-          "40%": { transform: "translate(-2px, -2px)" },
-          "60%": { transform: "translate(2px, 2px)" },
-          "80%": { transform: "translate(2px, -2px)" },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "reveal-mask": {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(calc(-100% - 2.5rem))" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        vibrate: "vibrate 0.4s linear infinite",
+        "fade-in-up": "fade-in-up 0.8s ease-out forwards",
+        "reveal-mask": "reveal-mask 1s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        marquee: "marquee 50s linear infinite",
       },
     },
   },

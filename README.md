@@ -1,0 +1,111 @@
+# Chameleon Docs 🦎
+
+> **Documentation Reimagined.** Craft living knowledge bases that adapt to your team. Beautiful by default.
+
+![Project Status](https://img.shields.io/badge/Status-Beta-blue)
+
+## ✨ Overview
+
+**Chameleon Docs** is a next-generation documentation platform designed to be visually comfortable and highly intelligent. It moves away from static, boring wikis to create a dynamic, adaptive environment for your team's knowledge.
+
+Built with **Next.js** and **React Server Components**, it prioritizes zero-latency performance while delivering a premium user experience with smooth animations and a refined design system.
+
+## 🚀 Key Features
+
+-   **⚡ Zero Latency:** Powered by Next.js App Router and React Server Components for instant page transitions and optimal performance.
+-   **🎨 Visual Bliss:** A strict, atomic design system featuring glassmorphism, smooth gradients, and micro-interactions.
+-   **🧠 AI-Powered:** Integrated with **Google's Generative AI** to assist in content creation and organization.
+-   **🦎 Adaptive Interface:** A "Chameleon" theme that adapts to user preferences, featuring a command menu (`cmdk`) for keyboard-first navigation.
+-   **🔐 Secure Authentication:** Robust auth system using **NextAuth.js** and **MongoDB**.
+-   **🌊 Smooth Experience:** Enhanced scrolling with **Lenis** and fluid animations with **Framer Motion**.
+
+## 🛠️ Tech Stack
+
+-   **Framework:** [Next.js](https://nextjs.org/)
+-   **Language:** [TypeScript](https://www.typescriptlang.org/)
+-   **Styling:** [Tailwind CSS](https://tailwindcss.com/), `tailwind-merge`, `cva`
+-   **Animations:** [Framer Motion](https://www.framer.com/motion/), [Lenis](https://lenis.studio/)
+-   **Database:** [MongoDB](https://www.mongodb.com/) (via Mongoose)
+-   **Authentication:** [NextAuth.js](https://authjs.dev/)
+-   **AI:** [Google Generative AI SDK](https://ai.google.dev/)
+-   **UI Components:** [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/)
+-   **Markdown:** `react-markdown`, `remark-gfm`, `react-syntax-highlighter`
+
+## 🏁 Getting Started
+
+### Prerequisites
+
+-   Node.js 18+
+-   MongoDB Database (Local or Atlas)
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/AtharvRG/chameleon-docs.git
+    cd chameleon-docs
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up environment variables:**
+    Create a `.env.local` file in the root directory and add the following:
+    ```env
+    # Database
+    MONGODB_URI=your_mongodb_connection_string
+
+    # Authentication
+    AUTH_SECRET=your_nextauth_secret
+    
+    # AI
+    GOOGLE_API_KEY=your_gemini_api_key
+    
+    # App
+    NEXT_PUBLIC_APP_URL=http://localhost:3000
+    ```
+
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+
+5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📂 Project Structure
+
+```bash
+chameleon-docs/
+├── actions/        # Server actions for data mutation
+├── app/            # Next.js App Router pages and layouts
+├── components/     # Reusable UI components
+│   ├── ui/         # Primitive components (buttons, inputs, etc.)
+│   └── ...         # Feature-specific components
+├── hooks/          # Custom React hooks
+├── lib/            # Utility functions and configurations
+├── models/         # Mongoose database models
+├── public/         # Static assets
+└── types/          # TypeScript type definitions
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1.  Fork the project
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+---
+
+<div align="center">
+  <p>Made with ❤️ by the Chameleon Docs Team</p>
+</div>

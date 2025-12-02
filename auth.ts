@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 // FIX: Added 'handlers' to the export list
 export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig,
+    session: { strategy: "jwt" },
     providers: [
         Credentials({
             async authorize(credentials) {

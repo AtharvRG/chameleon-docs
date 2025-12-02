@@ -65,7 +65,7 @@ const ACCENT_COLORS = [
     { id: "cyan", color: "#06b6d4", label: "Cyan" },
     { id: "teal", color: "#14b8a6", label: "Teal" },
     { id: "green", color: "#22c55e", label: "Green" },
-    { id: "orange", color: "#f97316", label: "Orange" },
+    { id: "orange", color: "#ea580c", label: "Orange" },
     { id: "rose", color: "#f43f5e", label: "Rose" },
 ];
 

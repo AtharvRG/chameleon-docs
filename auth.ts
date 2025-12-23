@@ -27,7 +27,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
                             email: user.email,
                             image: user.image,
                             // No password for OAuth users
-                        });
+                        } as any);
                     } else if (user.image && !existingUser.image) {
                         // Update image if the user exists but doesn't have one
                         existingUser.image = user.image;

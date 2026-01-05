@@ -8,6 +8,7 @@ import { ArrowUpRight, Github, Star, Anchor } from "lucide-react";
 import MagneticButton from "@/components/ui/magnetic-button";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import Footer from "@/components/footer";
 
 export default function LandingPageClient({ session }: { session: any }) {
     const containerRef = useRef(null);
@@ -191,6 +192,9 @@ export default function LandingPageClient({ session }: { session: any }) {
 
             </section>
 
+            {/* Use the Footer component */}
+            <Footer />
+            
             {/* Footer - Made responsive */}
             <footer className="border-t border-border bg-secondary/30 py-8 sm:py-12">
                 <div className="container flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-8 px-4 sm:px-0">

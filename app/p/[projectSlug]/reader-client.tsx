@@ -18,6 +18,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { WaveTransition, WavePhase } from "@/components/animations/wave-transition";
+type ReimaginationVersion = {
+  id: string;
+  content: string;
+  mode: string;
+  createdAt: number;
+};
+
 
 interface ReaderClientProps {
   project: any;
@@ -255,6 +262,12 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
 
     const [reimagineMode, setReimagineMode] = useState("standard");
     const [storedReimaginedContent, setStoredReimaginedContent] = useState<string | null>(null);
+    const [reimaginationHistory, setReimaginationHistory] =
+    useState<ReimaginationVersion[]>([]);
+ 
+    const [activeReimaginationId, setActiveReimaginationId] =
+    useState<string | null>(null);
+
     const [viewMode, setViewMode] = useState<"original" | "reimagined">("original");
     const [wavePhase, setWavePhase] = useState<WavePhase>("idle");
     const [showLoader, setShowLoader] = useState(false);
@@ -265,6 +278,35 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         error,
     } = usePuterAI();
 
+
+    // Load persisted content
+    useEffect(() => {
+    const historyKey = `reimagined-history-${project.slug}-${activePage.slug}`;
+    const raw = localStorage.getItem(historyKey);
+
+    if (!raw) {
+    setReimaginationHistory([]);
+    setStoredReimaginedContent(null);
+    setViewMode("original");
+    return;
+  }
+
+    try {
+    const history = JSON.parse(raw);
+
+    if (Array.isArray(history) && history.length > 0) {
+      const latest = history[history.length - 1];
+
+      setReimaginationHistory(history);
+      setActiveReimaginationId(latest.id);
+      setStoredReimaginedContent(latest.content);
+      setViewMode("original");
+    }
+  } catch (err) {
+    console.error("Failed to load reimagination history", err);
+    localStorage.removeItem(historyKey);
+  }
+ }, [project.slug, activePage.slug]);
     useEffect(() => {
         const key = `reimagined-${project.slug}-${activePage.slug}`;
         const saved = localStorage.getItem(key);
@@ -282,6 +324,26 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         setWavePhase("fade-out");
 
         try {
+            // Use PuterJS for AI reimagination (client-side)
+            const newContent = await puterReimagine(activePage.content, mode);
+            const newVersion = {
+            id: crypto.randomUUID(),
+            content: newContent,
+            mode,
+            createdAt: Date.now(),
+           };
+
+
+            // Store content and swap - content is hidden because we're in "loading" phase
+            setReimaginationHistory(prev => [...prev, newVersion]);
+            setActiveReimaginationId(newVersion.id);
+            setStoredReimaginedContent(newContent);
+
+            localStorage.setItem(
+           `reimagined-history-${project.slug}-${activePage.slug}`,
+            JSON.stringify([...reimaginationHistory, newVersion])
+            );
+
             const newContent = await reimagine(activePage.content, reimagineMode);
             setStoredReimaginedContent(newContent);
             localStorage.setItem(

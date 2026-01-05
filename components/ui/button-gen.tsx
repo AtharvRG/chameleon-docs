@@ -84,14 +84,14 @@ export default function StatusButton({
             onClick={onClick}
             disabled={disabled || isLoading || isTransforming}
             className={cn(
-                "group relative h-10 min-w-[160px] overflow-hidden rounded-md px-6 text-sm font-semibold text-white transition-all duration-300",
+                "group relative h-10 min-w-[160px] overflow-hidden rounded-md px-6 text-sm font-semibold text-white transition-all duration-200",
                 // Gradient background for "Reimagine" mode
                 mode === "original" && !isLoading && !isTransforming
-                    ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/25"
+                    ? "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:shadow-md hover:shadow-indigo-500/20"
                     : isLoading || isTransforming
                     ? "bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600"
-                    : "bg-zinc-800 hover:bg-zinc-700 hover:scale-105",
-                (disabled || isLoading || isTransforming) && "cursor-not-allowed opacity-90 hover:scale-100",
+                    : "bg-zinc-800 hover:bg-zinc-700",
+                (disabled || isLoading || isTransforming) && "cursor-not-allowed opacity-90",
                 className
             )}
             animate={
@@ -170,9 +170,9 @@ export function ReimagineButton({
             onClick={onClick}
             disabled={disabled || isLoading}
             className={cn(
-                "group relative h-10 min-w-[140px] overflow-hidden rounded-md px-5 text-sm font-semibold text-white transition-all duration-300",
+                "group relative h-10 min-w-[140px] overflow-hidden rounded-md px-5 text-sm font-semibold text-white transition-all duration-200",
                 "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500",
-                !disabled && !isLoading && "hover:scale-105 hover:shadow-lg hover:shadow-indigo-500/25",
+                !disabled && !isLoading && "hover:shadow-md hover:shadow-indigo-500/20",
                 (disabled || isLoading) && "cursor-not-allowed opacity-70",
                 className
             )}
@@ -206,12 +206,7 @@ export function ReimagineButton({
                         </>
                     ) : (
                         <>
-                            <motion.div
-                                whileHover={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] }}
-                                transition={{ duration: 0.4 }}
-                            >
-                                <Sparkles className="h-4 w-4" />
-                            </motion.div>
+                            <Sparkles className="h-4 w-4" />
                             <span>Reimagine</span>
                         </>
                     )}
@@ -236,11 +231,10 @@ export function ToggleButton({
             onClick={onClick}
             disabled={disabled || isAnimating}
             className={cn(
-                "group relative h-10 min-w-[140px] overflow-hidden rounded-md px-5 text-sm font-semibold transition-all duration-300",
+                "group relative h-10 min-w-[140px] overflow-hidden rounded-md px-5 text-sm font-semibold transition-all duration-200",
                 mode === "reimagined" 
                     ? "bg-zinc-800 text-white hover:bg-zinc-700" 
                     : "bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30",
-                !disabled && !isAnimating && "hover:scale-105",
                 (disabled || isAnimating) && "cursor-not-allowed opacity-70",
                 className
             )}
@@ -280,4 +274,3 @@ export function ToggleButton({
         </motion.button>
     );
 }
-

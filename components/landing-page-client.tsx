@@ -8,6 +8,7 @@ import { ArrowUpRight, Github, Star, Anchor } from "lucide-react";
 import MagneticButton from "@/components/ui/magnetic-button";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { SiteFooter } from "@/components/site-footer";
 import Footer from "@/components/footer";
 
 export default function LandingPageClient({ session }: { session: any }) {
@@ -151,9 +152,14 @@ export default function LandingPageClient({ session }: { session: any }) {
                 </div>
             </div>
 
+
+
+            {/* Feature Grid (Magazine Layout) */}
+            <section ref={featureRef} className="container py-32 space-y-32">
             {/* Feature Grid (Magazine Layout) - Made responsive */}
             <section ref={featureRef} className="container py-20 sm:py-32 space-y-20 sm:space-y-32 px-4 sm:px-0">
 
+                {/* ... feature content ... */}
                 {/* Feature 1: Image Left, Text Right */}
                 <div className="grid grid-cols-1 gap-y-8 sm:gap-y-12 md:grid-cols-12 md:gap-x-12 items-center">
                     <div className="md:col-span-7">
@@ -191,6 +197,12 @@ export default function LandingPageClient({ session }: { session: any }) {
                 </div>
 
             </section>
+
+            {/* Footer */}
+            <SiteFooter />
+        </div>
+    );
+}
 
             {/* Use the Footer component */}
             <Footer />

@@ -12,62 +12,65 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
 
 ## 🚀 Key Features
 
--   **⚡ Zero Latency:** Powered by Next.js App Router and React Server Components for instant page transitions and optimal performance.
--   **🎨 Visual Bliss:** A strict, atomic design system featuring glassmorphism, smooth gradients, and micro-interactions.
--   **🧠 AI-Powered:** Integrated with **Google's Generative AI** to assist in content creation and organization.
--   **🦎 Adaptive Interface:** A "Chameleon" theme that adapts to user preferences, featuring a command menu (`cmdk`) for keyboard-first navigation.
--   **🔐 Secure Authentication:** Robust auth system using **NextAuth.js** and **MongoDB**.
--   **🌊 Smooth Experience:** Enhanced scrolling with **Lenis** and fluid animations with **Framer Motion**.
+- **⚡ Zero Latency:** Powered by Next.js App Router and React Server Components for instant page transitions and optimal performance.
+- **🎨 Visual Bliss:** A strict, atomic design system featuring glassmorphism, smooth gradients, and micro-interactions.
+- **🧠 AI-Powered:** Integrated with **PuterJS** (using `google/gemini-3-flash-preview` model) for intelligent content reimagination - no API keys required!
+- **🦎 Adaptive Interface:** A "Chameleon" theme that adapts to user preferences, featuring a command menu (`cmdk`) for keyboard-first navigation.
+- **🔐 Secure Authentication:** Robust auth system using **NextAuth.js** and **MongoDB**.
+- **🌊 Smooth Experience:** Enhanced scrolling with **Lenis** and fluid animations with **Framer Motion**.
 
 ## 🛠️ Tech Stack
 
--   **Framework:** [Next.js](https://nextjs.org/)
--   **Language:** [TypeScript](https://www.typescriptlang.org/)
--   **Styling:** [Tailwind CSS](https://tailwindcss.com/), `tailwind-merge`, `cva`
--   **Animations:** [Framer Motion](https://www.framer.com/motion/), [Lenis](https://lenis.studio/)
--   **Database:** [MongoDB](https://www.mongodb.com/) (via Mongoose)
--   **Authentication:** [NextAuth.js](https://authjs.dev/)
--   **AI:** [Google Generative AI SDK](https://ai.google.dev/)
--   **UI Components:** [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/)
--   **Markdown:** `react-markdown`, `remark-gfm`, `react-syntax-highlighter`
+- **Framework:** [Next.js](https://nextjs.org/)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/), `tailwind-merge`, `cva`
+- **Animations:** [Framer Motion](https://www.framer.com/motion/), [Lenis](https://lenis.studio/)
+- **Database:** [MongoDB](https://www.mongodb.com/) (via Mongoose)
+- **Authentication:** [NextAuth.js](https://authjs.dev/)
+- **AI:** [PuterJS](https://puter.com/) (client-side, uses `google/gemini-3-flash-preview`)
+- **UI Components:** [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/)
+- **Markdown:** `react-markdown`, `remark-gfm`, `react-syntax-highlighter`
 
 ## 🏁 Getting Started
 
 ### Prerequisites
 
--   Node.js 18+
--   MongoDB Database (Local or Atlas)
+- Node.js 18+
+- MongoDB Database (Local or Atlas)
 
 ### Installation
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/AtharvRG/chameleon-docs.git
     cd chameleon-docs
     ```
 
 2.  **Install dependencies:**
+
     ```bash
     npm install
     ```
 
 3.  **Set up environment variables:**
     Create a `.env.local` file in the root directory and add the following:
+
     ```env
     # Database
     MONGODB_URI=your_mongodb_connection_string
 
     # Authentication
     AUTH_SECRET=your_nextauth_secret
-    
-    # AI
-    GOOGLE_API_KEY=your_gemini_api_key
-    
+
     # App
     NEXT_PUBLIC_APP_URL=http://localhost:3000
     ```
 
+    > **Note:** No API key is needed for AI features! PuterJS handles AI through its client-side SDK with automatic temporary user creation.
+
 4.  **Run the development server:**
+
     ```bash
     npm run dev
     ```

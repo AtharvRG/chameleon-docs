@@ -309,3 +309,28 @@ html.lenis body {
 .copy-button:hover {
   background: #4a5568;
 }
+/* globals.css or your component-specific styles */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr; /* Single column layout for mobile */
+    }
+
+    .glass-card {
+        margin-bottom: 1rem;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .glass-card h3 {
+        font-size: 1.25rem; /* Adjust heading size */
+    }
+
+    .glass-card p {
+        font-size: 0.875rem; /* Adjust text size */
+    }
+
+    .glass-card .badge {
+        font-size: 0.75rem; /* Small badge text on mobile */
+    }
+}

@@ -62,7 +62,6 @@ export function DashboardClient({ initialProjects }: { initialProjects: ProjectD
 
                 {initialProjects.length === 0 ? (
                     <GlassCard className="flex flex-col items-center justify-center py-24 text-center border-dashed border-border bg-card/20">
-
                         <h3 className="text-xl font-bold mb-2">No projects yet</h3>
                         <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
                             Create your first documentation site to get started building beautiful docs.

@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import MagneticButton from "@/components/ui/magnetic-button";
 
 interface ProjectData {
     _id: string;
@@ -46,9 +45,9 @@ export function DashboardClient({ initialProjects }: { initialProjects: ProjectD
                         <Input placeholder="Search projects..." className="pl-10 bg-card/50 border-border" />
                     </div>
                     <Link href="/dashboard/new">
-                        <MagneticButton size="md" className="gap-2">
+                        <Button size="default" className="gap-2">
                             <Plus className="h-4 w-4" /> New Project
-                        </MagneticButton>
+                        </Button>
                     </Link>
                 </div>
             </div>
@@ -62,13 +61,12 @@ export function DashboardClient({ initialProjects }: { initialProjects: ProjectD
 
                 {initialProjects.length === 0 ? (
                     <GlassCard className="flex flex-col items-center justify-center py-24 text-center border-dashed border-border bg-card/20">
-
                         <h3 className="text-xl font-bold mb-2">No projects yet</h3>
                         <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
                             Create your first documentation site to get started building beautiful docs.
                         </p>
                         <Link href="/dashboard/new">
-                            <MagneticButton size="lg">Create Project</MagneticButton>
+                            <Button size="lg">Create Project</Button>
                         </Link>
                     </GlassCard>
                 ) : (

@@ -5,18 +5,26 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronRight, Home, LayoutDashboard, Wand2, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check, Clock } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Menu, X, ChevronRight, LayoutDashboard, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePuterAI } from "@/hooks/use-puter-ai";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/markdown-renderer";
 import { ChameleonLogo } from "@/components/ChameleonLogo";
+import { SiteFooter } from "@/components/site-footer";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
     DropdownMenuSeparator,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { WaveTransition, WavePhase } from "@/components/animations/wave-transition";
 
@@ -33,7 +41,7 @@ function useSmoothScroll(ref: React.RefObject<HTMLElement>) {
 
         const animate = () => {
             const diff = targetScroll - currentScroll;
-            
+
             if (Math.abs(diff) > 0.5) {
                 currentScroll += diff * ease;
                 element.scrollTop = currentScroll;
@@ -74,17 +82,17 @@ function useSmoothScroll(ref: React.RefObject<HTMLElement>) {
 
 
 interface ReaderClientProps {
-    project: any;
-    pages: any[];
-    activePage: any;
+  project: any;
+  pages: any[];
+  activePage: any;
 }
 
 const REIMAGINE_MODES = [
-    { id: "technical", label: "Technical" },
-    { id: "standard", label: "Standard" },
-    { id: "simplified", label: "Simplified" },
-    { id: "beginner", label: "Beginner" },
-    { id: "noob", label: "Like I'm 5" },
+  { id: "technical", label: "Technical" },
+  { id: "standard", label: "Standard" },
+  { id: "simplified", label: "Simplified" },
+  { id: "beginner", label: "Beginner" },
+  { id: "noob", label: "Like I'm 5" },
 ];
 
 interface ReimagineVersion {
@@ -96,22 +104,229 @@ interface ReimagineVersion {
 }
 
 export function ReaderClient({ project, pages, activePage }: ReaderClientProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const currentPageSlug = searchParams.get("page") || pages[0]?.slug;
+
+  const [reimagineMode, setReimagineMode] = useState("standard");
+  const [viewMode, setViewMode] = useState<"original" | "reimagined" | "diff">("original");
+  const [storedReimaginedContent, setStoredReimaginedContent] = useState<string | null>(null);
+  const [isReimagining, setIsReimagining] = useState(false);
+
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const { reimagine } = usePuterAI();
+
+  /* Load cached AI content */
+  useEffect(() => {
+    const key = `reimagined-${project.slug}-${activePage.slug}`;
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      setStoredReimaginedContent(cached);
+    }
+    setViewMode("original");
+  }, [project.slug, activePage.slug]);
+
+  /* AI Reimagine */
+  const handleReimagine = async () => {
+    if (isReimagining) return;
+
+    try {
+      setIsReimagining(true);
+      const newContent = await reimagine(activePage.content, reimagineMode);
+      setStoredReimaginedContent(newContent);
+      localStorage.setItem(
+        `reimagined-${project.slug}-${activePage.slug}`,
+        newContent
+      );
+      setViewMode("reimagined");
+    } catch (err) {
+      console.error("AI Reimagination failed", err);
+    } finally {
+      setIsReimagining(false);
+    }
+  };
+
+  /* Diff logic (simple line-based) */
+  const getDiffContent = () => {
+    if (!storedReimaginedContent) return activePage.content;
+
+    const originalLines = activePage.content.split("\n");
+    const aiLines = storedReimaginedContent.split("\n");
+
+    return aiLines
+      .map((line, i) =>
+        line !== originalLines[i]
+          ? `> **🟢 Changed:** ${line}`
+          : line
+      )
+      .join("\n");
+  };
+
+  const displayContent =
+    viewMode === "diff"
+      ? getDiffContent()
+      : viewMode === "reimagined" && storedReimaginedContent
+      ? storedReimaginedContent
+      : activePage.content;
+
+  return (
+    <div className="flex min-h-screen bg-background text-foreground">
+      {/* Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        ref={sidebarRef}
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-72 border-r bg-card/80 backdrop-blur transition-transform lg:translate-x-0",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex h-16 items-center justify-between border-b px-6">
+            <Link href="/" className="flex items-center gap-2">
+              <ChameleonLogo size={24} />
+              <span className="font-bold">Chameleon</span>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+            {pages.map((page) => {
+              const active = currentPageSlug === page.slug;
+              return (
+                <Link
+                  key={page._id}
+                  href={`/p/${project.slug}?page=${page.slug}`}
+                  onClick={() => setIsSidebarOpen(false)}
+                >
+                  <div
+                    className={cn(
+                      "rounded-md px-3 py-2 text-sm",
+                      active
+                        ? "bg-primary/15 text-primary font-medium"
+                        : "text-muted-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    {page.title}
+                  </div>
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="border-t p-4">
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm" className="w-full gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 lg:pl-72">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 bg-background/80 backdrop-blur">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          <div className="flex items-center gap-2">
+            {storedReimaginedContent && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setViewMode(viewMode === "reimagined" ? "original" : "reimagined")
+                  }
+                  disabled={isReimagining}
+                >
+                  <RotateCcw className="h-4 w-4 mr-1" />
+                  {viewMode === "reimagined" ? "Original" : "Reimagined"}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant={viewMode === "diff" ? "default" : "outline"}
+                  onClick={() =>
+                    setViewMode(viewMode === "diff" ? "reimagined" : "diff")
+                  }
+                  disabled={isReimagining}
+                >
+                  Diff View
+                </Button>
+              </>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" variant="ghost" disabled={isReimagining}>
+                  {REIMAGINE_MODES.find(m => m.id === reimagineMode)?.label}
+                  <ChevronDown className="h-3 w-3 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {REIMAGINE_MODES.map(mode => (
+                  <DropdownMenuItem
+                    key={mode.id}
+                    onClick={() => setReimagineMode(mode.id)}
+                  >
+                    {mode.label}
+                    {reimagineMode === mode.id && (
+                      <Check className="h-3 w-3 ml-auto" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+              size="sm"
+              onClick={handleReimagine}
+              disabled={isReimagining}
+            >
+              {isReimagining ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              Reimagine
+            </Button>
+          </div>
+        </header>
+
+        <div className="container max-w-4xl py-12">
+          <h1 className="text-4xl font-bold mb-6">{activePage.title}</h1>
+          <MarkdownRenderer content={displayContent} />
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const searchParams = useSearchParams();
     const currentPageSlug = searchParams.get("page") || pages[0]?.slug;
 
-    // Sidebar scroll ref
-    const sidebarNavRef = useRef<HTMLElement>(null);
-    useSmoothScroll(sidebarNavRef);
-
-    // Reimagine State
     const [reimagineMode, setReimagineMode] = useState("standard");
     const [storedReimaginedContent, setStoredReimaginedContent] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"original" | "reimagined">("original");
     const [wavePhase, setWavePhase] = useState<WavePhase>("idle");
-    const [isReimagining, setIsReimagining] = useState(false);
-    const [pendingContent, setPendingContent] = useState<string | null>(null);
-    const [pendingViewMode, setPendingViewMode] = useState<"original" | "reimagined" | null>(null);
     const [showLoader, setShowLoader] = useState(false);
 
     // Version History State
@@ -151,6 +366,19 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setStoredReimaginedContent(null);
             setViewMode("original");
             setActiveVersionId(null);
+    const {
+        reimagine,
+        isLoading,
+        error,
+    } = usePuterAI();
+
+    useEffect(() => {
+        const key = `reimagined-${project.slug}-${activePage.slug}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            setStoredReimaginedContent(saved);
+            setViewMode("original");
+            setWavePhase("idle");
         } else {
             setVersionHistory([]);
             setStoredReimaginedContent(null);
@@ -190,12 +418,20 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
 
     // PuterJS AI hook for reimagination
     const { reimagine: puterReimagine } = usePuterAI();
+        setViewMode("original");
+        setWavePhase("idle");
+    }, [project.slug, activePage.slug]);
+
+    const handleReimagine = async () => {
+        if (isLoading) return;
 
     const handleReimagine = async (mode: string = reimagineMode) => {
         if (isReimagining) return;
-        
+
         setIsReimagining(true);
         setReimagineMode(mode);
+        setShowLoader(true); // Show loader for Reimagine
+        setWavePhase("fade-out"); // Start fade out
         setShowLoader(true);
         setWavePhase("fade-out");
 
@@ -225,19 +461,25 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setActiveVersionId(newVersion.id);
             setViewMode("reimagined");
             
-            setWavePhase("fade-in");
+            const newContent = await reimagine(activePage.content, reimagineMode);
+            setStoredReimaginedContent(newContent);
+            localStorage.setItem(
+                `reimagined-${project.slug}-${activePage.slug}`,
+                newContent
+            );
+            setViewMode("reimagined");
 
-        } catch (error) {
-            console.error("PuterJS AI Error:", error);
+            // Now fade in the new content
+            setWavePhase("fade-in");
+        } catch {
             setWavePhase("idle");
-            setIsReimagining(false);
             setShowLoader(false);
         }
     };
 
     const toggleView = () => {
         if (isReimagining) return;
-        
+
         setIsReimagining(true);
         setShowLoader(false);
         
@@ -266,40 +508,53 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         setPendingContent(version.content);
         setPendingViewMode("reimagined");
         setActiveVersionId(versionId);
+        setShowLoader(false); // No loader for toggle
+
+        // Set pending view mode for when fade-out completes
+        setPendingViewMode(viewMode === "reimagined" ? "original" : "reimagined");
+
+        // Start fade out
+        if (isLoading || !storedReimaginedContent) return;
         setWavePhase("fade-out");
+        setViewMode(viewMode === "original" ? "reimagined" : "original");
+        setWavePhase("fade-in");
     };
 
-    const displayContent = viewMode === "reimagined" && storedReimaginedContent 
-        ? storedReimaginedContent 
+    const displayContent = viewMode === "reimagined" && storedReimaginedContent
+        ? storedReimaginedContent
         : activePage.content;
+    const displayContent =
+        viewMode === "reimagined" && storedReimaginedContent
+            ? storedReimaginedContent
+            : activePage.content;
 
     const hasVersions = versionHistory.length > 0;
 
     return (
         <div className="flex min-h-screen bg-background text-foreground">
-            {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
-                <div 
+                <div
                     className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                 />
             )}
 
-            {/* Sidebar */}
-            <aside className={cn(
-                "fixed inset-y-0 left-0 z-50 w-72 transform border-r border-border bg-card/50 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0",
-                isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-            )}>
-                <div className="flex h-full flex-col" data-lenis-prevent>
-                    {/* Sidebar Header */}
-                    <div className="flex h-16 items-center justify-between border-b border-border px-6">
+            <aside
+                className={cn(
+                    "fixed inset-y-0 left-0 z-50 w-72 border-r border-border bg-card/50 backdrop-blur-xl transition-transform lg:translate-x-0",
+                    isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                )}
+            >
+                <div className="flex h-full flex-col">
+                    <div className="flex h-16 items-center justify-between border-b px-6">
                         <Link href="/" className="flex items-center gap-2">
                             <ChameleonLogo size={24} />
-                            <span className="font-heading font-bold text-lg">Chameleon</span>
+                            <span className="font-bold">Chameleon</span>
                         </Link>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="lg:hidden"
                             onClick={() => setIsSidebarOpen(false)}
                         >
@@ -310,7 +565,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                     {/* Project Info */}
                     <div className="border-b border-border p-6">
                         <div className="flex items-center gap-3 mb-2">
-                            <div 
+                            <div
                                 className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-card shadow-sm text-xl"
                                 style={{
                                     background: project.theme?.color ? `linear-gradient(135deg, ${project.theme.color}, ${project.theme.color}88)` : undefined
@@ -335,14 +590,14 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                 acc[section].push(page);
                                 return acc;
                             }, {});
-                            
+
                             // Sort sections - use project sectionOrder if available
                             const availableSections = Object.keys(groupedPages);
                             const storedOrder = project.sectionOrder || [];
                             const orderedFromStorage = storedOrder.filter((s: string) => availableSections.includes(s));
                             const newSections = availableSections.filter(s => !storedOrder.includes(s) && s !== "Uncategorized");
                             const sections = ["Uncategorized", ...orderedFromStorage, ...newSections.sort()].filter(s => availableSections.includes(s));
-                            
+
                             return sections.map(section => (
                                 <div key={section} className={section !== "Uncategorized" ? "pt-4" : ""}>
                                     {/* Section Header - only show for non-Uncategorized */}
@@ -358,15 +613,15 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                         {groupedPages[section].map((page: any) => {
                                             const isActive = currentPageSlug === page.slug;
                                             return (
-                                                <Link 
-                                                    key={page._id} 
+                                                <Link
+                                                    key={page._id}
                                                     href={`/p/${project.slug}?page=${page.slug}`}
                                                     onClick={() => setIsSidebarOpen(false)}
                                                 >
                                                     <div className={cn(
                                                         "group flex items-center justify-between rounded-md px-3 py-2 text-sm transition-all",
-                                                        isActive 
-                                                            ? "bg-primary/15 text-primary font-medium" 
+                                                        isActive
+                                                            ? "bg-primary/15 text-primary font-medium"
                                                             : "text-muted-foreground hover:bg-muted/50 hover:text-foreground font-normal"
                                                     )}>
                                                         <span>{page.title}</span>
@@ -375,16 +630,33 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                                 </Link>
                                             );
                                         })}
+                    <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+                        {pages.map((page) => {
+                            const isActive = currentPageSlug === page.slug;
+                            return (
+                                <Link
+                                    key={page._id}
+                                    href={`/p/${project.slug}?page=${page.slug}`}
+                                    onClick={() => setIsSidebarOpen(false)}
+                                >
+                                    <div
+                                        className={cn(
+                                            "rounded-md px-3 py-2 text-sm transition",
+                                            isActive
+                                                ? "bg-primary/15 text-primary font-medium"
+                                                : "text-muted-foreground hover:bg-muted/50"
+                                        )}
+                                    >
+                                        {page.title}
                                     </div>
-                                </div>
-                            ));
-                        })()}
+                                </Link>
+                            );
+                        })}
                     </nav>
 
-                    {/* Sidebar Footer */}
-                    <div className="border-t border-border p-4">
+                    <div className="border-t p-4">
                         <Link href="/dashboard">
-                            <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                            <Button variant="outline" size="sm" className="w-full gap-2">
                                 <LayoutDashboard className="h-4 w-4" />
                                 Dashboard
                             </Button>
@@ -393,14 +665,13 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                 </div>
             </aside>
 
-            {/* Main Content */}
             <main className="flex-1 lg:pl-72">
                 {/* Header with Reimagine Controls */}
                 <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 lg:px-6">
                     <div className="flex items-center gap-4">
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="lg:hidden"
                             onClick={() => setIsSidebarOpen(true)}
                         >
@@ -467,12 +738,28 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                             <Button 
                                 variant="outline" 
                                 size="sm" 
+                        {/* Toggle Button (Original <-> Reimagined) */}
+                        {storedReimaginedContent && !isReimagining ? (
+                <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="lg:hidden"
+                        onClick={() => setIsSidebarOpen(true)}
+                    >
+                        <Menu className="h-5 w-5" />
+                    </Button>
+
+                    <div className="flex items-center gap-2">
+                        {storedReimaginedContent && (
+                            <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={toggleView}
-                                disabled={wavePhase !== "idle"}
-                                className="gap-2"
+                                disabled={isLoading}
                             >
-                                <RotateCcw className="h-4 w-4" />
-                                {viewMode === "reimagined" ? "Original" : "Show Reimagined"}
+                                <RotateCcw className="h-4 w-4 mr-2" />
+                                {viewMode === "reimagined" ? "Original" : "Reimagined"}
                             </Button>
                         ) : null}
 
@@ -480,9 +767,9 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                         <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border border-border">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
                                         className="h-8 gap-2 text-xs font-medium hover:bg-background/50"
                                         disabled={isReimagining}
                                     >
@@ -492,7 +779,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-40">
                                     {REIMAGINE_MODES.map((mode) => (
-                                        <DropdownMenuItem 
+                                        <DropdownMenuItem
                                             key={mode.id}
                                             onClick={() => setReimagineMode(mode.id)}
                                             className="gap-2 cursor-pointer text-xs"
@@ -506,7 +793,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
 
                             <div className="w-px h-4 bg-border mx-1" />
 
-                            <Button 
+                            <Button
                                 size="sm"
                                 onClick={() => handleReimagine()}
                                 disabled={isReimagining}
@@ -523,32 +810,80 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                 Reimagine
                             </Button>
                         </div>
+                        )}
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button size="sm" variant="ghost" disabled={isLoading}>
+                                    {REIMAGINE_MODES.find(m => m.id === reimagineMode)?.label}
+                                    <ChevronDown className="h-3 w-3 ml-1" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                {REIMAGINE_MODES.map(mode => (
+                                    <DropdownMenuItem
+                                        key={mode.id}
+                                        onClick={() => setReimagineMode(mode.id)}
+                                    >
+                                        {mode.label}
+                                        {reimagineMode === mode.id && (
+                                            <Check className="h-3 w-3 ml-auto" />
+                                        )}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Button
+                            size="sm"
+                            onClick={handleReimagine}
+                            disabled={isLoading}
+                            className="gap-2"
+                        >
+                            {isLoading ? (
+                                <RefreshCw className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Sparkles className="h-4 w-4" />
+                            )}
+                            Reimagine
+                        </Button>
                     </div>
                 </header>
 
-                {/* Content Area */}
-                <div className="container max-w-4xl py-12 lg:py-16 relative">
-                    <div className="mb-8">
-                        <h1 className="font-heading text-4xl font-bold tracking-tight lg:text-5xl">
-                            {activePage.title}
-                        </h1>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                            Last updated {activePage.updatedAt ? new Date(activePage.updatedAt).toLocaleDateString() : "Recently"}
-                        </p>
-                    </div>
+                <div className="container max-w-4xl py-12">
+                    <h1 className="text-4xl font-bold mb-6">{activePage.title}</h1>
+
+                    {error && (
+                        <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                            AI failed. Please try again.
+                        </div>
+                    )}
+
+
 
                     {/* Wave Transition Animation */}
-                    <WaveTransition 
-                        phase={wavePhase} 
+                    <WaveTransition
+                        phase={wavePhase}
                         showLoader={showLoader}
-                        onPhaseComplete={handlePhaseComplete}
+                        onPhaseComplete={() => {
+                            if (wavePhase !== "idle") {
+                                setWavePhase("idle");
+                                setShowLoader(false);
+                            }
+                        }}
                     >
-                        <MarkdownRenderer 
-                            content={displayContent} 
+                        <MarkdownRenderer
+                            content={displayContent}
                         />
+                        <MarkdownRenderer content={displayContent} />
                     </WaveTransition>
                 </div>
+                <SiteFooter />
             </main>
         </div>
     );
+}
+      </main>
+    </div>
+  );
 }

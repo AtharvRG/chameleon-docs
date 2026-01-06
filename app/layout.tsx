@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AccentProvider } from "@/components/accent-provider";
 import { CommandMenu } from "@/components/command-menu";
 import SmoothScroll from "@/components/smooth-scroll";
+import CopyCodeHandler from "./components/CopyCodeHandler"; // Added this line
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -72,6 +73,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AccentProvider>
+            <CopyCodeHandler /> {/* Added this line to enable copy buttons globally */}
             <CommandMenu />
             {children}
           </AccentProvider>

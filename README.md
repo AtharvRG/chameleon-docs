@@ -1,8 +1,28 @@
 # Chameleon Docs 🦎
 
-> **Documentation Reimagined.** Craft living knowledge bases that adapt to your team. Beautiful by default.
+> **Documentation, Reimagined.**  
+> A flexible, open-source documentation platform that adapts to your team’s workflow. Clean, fast, and beautiful by default.
 
 ![Project Status](https://img.shields.io/badge/Status-Beta-blue)
+![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+---
+
+## ✨ Why Chameleon Docs?
+
+Chameleon Docs is built to make documentation feel alive — not static.  
+It’s designed for teams who want clarity, flexibility, and an open space for collaboration.
+
+### Key Goals
+- 📚 Simple, readable documentation structure  
+- 🧩 Easy to customize and extend  
+- 🤝 Beginner-friendly open-source project  
+- 🚀 Lightweight and framework-agnostic
+
+---
+
+
 
 ## ✨ Overview
 

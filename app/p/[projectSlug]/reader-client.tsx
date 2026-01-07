@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronRight, Home, LayoutDashboard, Wand2, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check } from "lucide-react";
+import { Menu, X, ChevronRight, Home, LayoutDashboard, Wand2, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check, Star } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { usePuterAI } from "@/hooks/use-puter-ai";
 
@@ -99,26 +99,54 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
     const [reimagineMode, setReimagineMode] = useState("standard");
     const [storedReimaginedContent, setStoredReimaginedContent] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"original" | "reimagined">("original");
+    const [preferredView, setPreferredView] = useState<"original" | "reimagined" | null>(null);
     const [wavePhase, setWavePhase] = useState<WavePhase>("idle");
     const [isReimagining, setIsReimagining] = useState(false);
     const [pendingContent, setPendingContent] = useState<string | null>(null);
     const [pendingViewMode, setPendingViewMode] = useState<"original" | "reimagined" | null>(null);
     const [showLoader, setShowLoader] = useState(false);
 
+    // Helper: Get preference key
+    const getPreferenceKey = () => `pref-view:${project.slug}:${activePage.slug}`;
 
-    // Load persisted content
+    // Helper: Save preferred view
+    const savePreferredView = (view: "original" | "reimagined") => {
+        const key = getPreferenceKey();
+        localStorage.setItem(key, view);
+        setPreferredView(view);
+    };
+
+    // Helper: Clear preferred view
+    const clearPreferredView = () => {
+        const key = getPreferenceKey();
+        localStorage.removeItem(key);
+        setPreferredView(null);
+    };
+
+    // Load persisted content and preferred view
     useEffect(() => {
-        const key = `reimagined-${project.slug}-${activePage.slug}`;
-        const saved = localStorage.getItem(key);
+        const contentKey = `reimagined-${project.slug}-${activePage.slug}`;
+        const saved = localStorage.getItem(contentKey);
+        
+        const prefKey = getPreferenceKey();
+        const savedPref = localStorage.getItem(prefKey) as "original" | "reimagined" | null;
+        
         if (saved) {
             setStoredReimaginedContent(saved);
-            setViewMode("original"); 
-            setWavePhase("idle");
         } else {
             setStoredReimaginedContent(null);
-            setViewMode("original");
-            setWavePhase("idle");
         }
+
+        // Apply preferred view if it exists
+        if (savedPref && saved) {
+            setPreferredView(savedPref);
+            setViewMode(savedPref);
+        } else {
+            setPreferredView(null);
+            setViewMode("original");
+        }
+        
+        setWavePhase("idle");
     }, [project.slug, activePage.slug]);
 
     // Handle wave phase completion
@@ -196,6 +224,8 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
     const displayContent = viewMode === "reimagined" && storedReimaginedContent 
         ? storedReimaginedContent 
         : activePage.content;
+
+    const isViewPreferred = preferredView === viewMode;
 
     return (
         <div className="flex min-h-screen bg-background text-foreground">
@@ -318,7 +348,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             {/* Main Content */}
             <main className="flex-1 lg:pl-72">
                 {/* Header with Reimagine Controls */}
-                <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 lg:px-6">
+                <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 lg:px-6 bg-background/80 backdrop-blur-md border-b border-border">
                     <div className="flex items-center gap-4">
                         <Button 
                             variant="ghost" 
@@ -406,6 +436,47 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                             Last updated {activePage.updatedAt ? new Date(activePage.updatedAt).toLocaleDateString() : "Recently"}
                         </p>
                     </div>
+
+                    {/* Preference Banner */}
+                    {viewMode === "reimagined" && storedReimaginedContent && !isViewPreferred && wavePhase === "idle" && (
+                        <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+                            <div className="flex items-center gap-2 text-sm">
+                                <Star className="h-4 w-4 text-primary" />
+                                <span className="text-foreground/90">
+                                    Viewing AI-reimagined content
+                                </span>
+                            </div>
+                            <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => savePreferredView("reimagined")}
+                                className="gap-2 border-primary/30 hover:bg-primary/10"
+                            >
+                                <Star className="h-3.5 w-3.5" />
+                                Save as my preferred view
+                            </Button>
+                        </div>
+                    )}
+
+                    {/* Clear Preference Button */}
+                    {preferredView && wavePhase === "idle" && (
+                        <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 px-4 py-2.5">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Check className="h-3.5 w-3.5" />
+                                <span>
+                                    Your preferred view: <strong className="text-foreground">{preferredView === "reimagined" ? "Reimagined" : "Original"}</strong>
+                                </span>
+                            </div>
+                            <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={clearPreferredView}
+                                className="h-7 text-xs"
+                            >
+                                Clear preference
+                            </Button>
+                        </div>
+                    )}
 
                     {/* Wave Transition Animation */}
                     <WaveTransition 

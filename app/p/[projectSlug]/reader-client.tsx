@@ -81,6 +81,28 @@ function useSmoothScroll(ref: React.RefObject<HTMLElement>) {
     }, [ref]);
 }
 
+// Hook for managing reimagine mode preference
+function useReimagineMode() {
+    const STORAGE_KEY = "chameleon:user:reimagineMode";
+    const DEFAULT_MODE = "standard";
+
+    const [mode, setModeState] = useState(DEFAULT_MODE);
+
+    useEffect(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            setModeState(saved);
+        }
+    }, []);
+
+    const setMode = useCallback((newMode: string) => {
+        setModeState(newMode);
+        localStorage.setItem(STORAGE_KEY, newMode);
+    }, []);
+
+    return [mode, setMode] as const;
+}
+
 function highlightNewSentences(originalContent: string, reimaginedContent: string): string {
     const sentenceRegex = /[^.!?]+[.!?]+/g;
     
@@ -348,6 +370,12 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
     const searchParams = useSearchParams();
     const currentPageSlug = searchParams.get("page") || pages[0]?.slug;
 
+    // Sidebar scroll ref
+    const sidebarNavRef = useRef<HTMLElement>(null);
+    useSmoothScroll(sidebarNavRef);
+
+    // Reimagine State
+    const [reimagineMode, setReimagineMode] = useReimagineMode();
     const [reimagineMode, setReimagineMode] = useState("standard");
     const [storedReimaginedContent, setStoredReimaginedContent] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"original" | "reimagined">("original");
@@ -485,7 +513,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         if (isReimagining) return;
 
         setIsReimagining(true);
-        setReimagineMode(mode);
         setShowLoader(true); // Show loader for Reimagine
         setWavePhase("fade-out"); // Start fade out
         setShowLoader(true);
@@ -983,6 +1010,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             </main>
         </div>
     );
+}
 }
 }
 }

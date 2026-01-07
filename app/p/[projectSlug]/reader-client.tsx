@@ -71,6 +71,28 @@ function useSmoothScroll(ref: React.RefObject<HTMLElement>) {
     }, [ref]);
 }
 
+// Hook for managing reimagine mode preference
+function useReimagineMode() {
+    const STORAGE_KEY = "chameleon:user:reimagineMode";
+    const DEFAULT_MODE = "standard";
+
+    const [mode, setModeState] = useState(DEFAULT_MODE);
+
+    useEffect(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            setModeState(saved);
+        }
+    }, []);
+
+    const setMode = useCallback((newMode: string) => {
+        setModeState(newMode);
+        localStorage.setItem(STORAGE_KEY, newMode);
+    }, []);
+
+    return [mode, setMode] as const;
+}
+
 
 interface ReaderClientProps {
     project: any;
@@ -96,7 +118,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
     useSmoothScroll(sidebarNavRef);
 
     // Reimagine State
-    const [reimagineMode, setReimagineMode] = useState("standard");
+    const [reimagineMode, setReimagineMode] = useReimagineMode();
     const [storedReimaginedContent, setStoredReimaginedContent] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"original" | "reimagined">("original");
     const [wavePhase, setWavePhase] = useState<WavePhase>("idle");
@@ -156,7 +178,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         if (isReimagining) return;
         
         setIsReimagining(true);
-        setReimagineMode(mode);
         setShowLoader(true); // Show loader for Reimagine
         setWavePhase("fade-out"); // Start fade out
 

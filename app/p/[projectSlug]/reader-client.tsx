@@ -80,6 +80,30 @@ function useSmoothScroll(ref: React.RefObject<HTMLElement>) {
     }, [ref]);
 }
 
+function highlightNewSentences(originalContent: string, reimaginedContent: string): string {
+    const sentenceRegex = /[^.!?]+[.!?]+/g;
+    
+    const originalSentences = new Set(
+        (originalContent.match(sentenceRegex) || []).map(s => s.trim().toLowerCase())
+    );
+    
+    const reimaginedSentences = reimaginedContent.match(sentenceRegex) || [];
+    
+    let result = reimaginedContent;
+    
+    reimaginedSentences.forEach(sentence => {
+        const trimmed = sentence.trim();
+        const normalized = trimmed.toLowerCase();
+        
+        if (!originalSentences.has(normalized)) {
+            const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escaped, 'g');
+            result = result.replace(regex, `<mark class="bg-yellow-200 dark:bg-yellow-800/40 px-1 rounded">${trimmed}</mark>`);
+        }
+    });
+    
+    return result;
+}
 
 interface ReaderClientProps {
   project: any;
@@ -520,6 +544,8 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         setWavePhase("fade-in");
     };
 
+    const displayContent = viewMode === "reimagined" && storedReimaginedContent 
+        ? highlightNewSentences(activePage.content, storedReimaginedContent)
     const displayContent = viewMode === "reimagined" && storedReimaginedContent
         ? storedReimaginedContent
         : activePage.content;
@@ -882,6 +908,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             </main>
         </div>
     );
+}
 }
       </main>
     </div>

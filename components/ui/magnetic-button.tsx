@@ -26,7 +26,8 @@ export default function MagneticButton({
         const middleX = clientX - (left + width / 2);
         const middleY = clientY - (top + height / 2);
 
-        setPosition({ x: middleX * 0.15, y: middleY * 0.15 });
+        // Reduced movement amount for subtlety
+        setPosition({ x: middleX * 0.05, y: middleY * 0.05 });
     };
 
     const reset = () => {
@@ -55,7 +56,8 @@ export default function MagneticButton({
             onMouseMove={handleMouse}
             onMouseLeave={reset}
             animate={{ x: position.x, y: position.y }}
-            transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+            // Changed from spring to smooth linear transition
+            transition={{ type: "tween", duration: 0.15, ease: "easeOut" }}
             className={cn(
                 "relative overflow-hidden rounded-full font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
                 variants[variant],

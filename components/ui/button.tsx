@@ -16,8 +16,8 @@ const buttonVariants = cva(
                 secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
                 ghost: "hover:bg-accent hover:text-accent-foreground",
                 link: "text-primary underline-offset-4 hover:underline",
-                // The Custom Glass Variant
-                glass: "bg-white/5 text-foreground backdrop-blur-md border border-white/10 hover:bg-white/10 hover:scale-[1.02] shadow-sm active:scale-95 transition-all duration-300",
+                // The Custom Glass Variant - UPDATED: Removed hover:scale-[1.02], changed duration
+                glass: "bg-white/5 text-foreground backdrop-blur-md border border-white/10 hover:bg-white/10 hover:shadow-md active:scale-95 transition-all duration-200",
             },
             size: {
                 default: "h-10 px-4 py-2",

@@ -1,10 +1,11 @@
+// app/p/[slug]/reader-client.tsx (updated)
 "use client";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Menu, X, ChevronRight, LayoutDashboard, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check, Clock, Star } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { usePuterAI } from "@/hooks/use-puter-ai";
+import { useReimagineEngine } from "@/hooks/use-reimagine-engine";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -100,6 +101,10 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
     const sidebarNavRef = useRef<HTMLElement>(null);
     useSmoothScroll(sidebarNavRef);
 
+    // Reimagine Engine
+    const { enqueue, cancelForPage, isProcessingForPage } = useReimagineEngine();
+
+    // Reimagine State
     const [reimagineMode, setReimagineMode] = useState("standard");
     const [reimaginationHistory, setReimaginationHistory] = useState<ReimaginationVersion[]>([]);
     const [currentReimaginedContent, setCurrentReimaginedContent] = useState<string | null>(null);
@@ -151,6 +156,19 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setPreferredView(null);
         }
     }, [project.slug, activePage.slug]);
+    useEffect(() => {
+  return () => {
+    cancelForPage(project.slug, activePage.slug);
+  };
+}, [project.slug, activePage.slug, cancelForPage]);
+
+
+    // Cancel any pending requests when page changes
+    useEffect(() => {
+        return () => {
+            cancelForPage(project.slug, activePage.slug);
+        };
+    }, [project.slug, activePage.slug, cancelForPage]);
 
     const persistViewPreference = useCallback((mode: "original" | "reimagined") => {
         const key = getViewPreferenceKey();
@@ -203,6 +221,17 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         setWavePhase("fade-out");
 
         try {
+            // Use centralized engine - automatically queued and deduplicated
+            const newContent = await enqueue(
+                project.slug,
+                activePage.slug,
+                activePage.content,
+                mode
+            );
+
+            // Store content and swap
+            setStoredReimaginedContent(newContent);
+            localStorage.setItem(`reimagined-${project.slug}-${activePage.slug}`, newContent);
             const newContent = await puterReimagine(activePage.content, mode);
 
             const now = new Date();
@@ -231,7 +260,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setWavePhase("fade-in");
 
         } catch (error) {
-            console.error("PuterJS AI Error:", error);
+            console.error("Reimagine Engine Error:", error);
             setWavePhase("idle");
             setIsReimagining(false);
             setShowLoader(false);

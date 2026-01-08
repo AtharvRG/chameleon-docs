@@ -8,6 +8,7 @@ import SmoothScroll from "@/components/smooth-scroll";
 import CopyCodeHandler from "./components/CopyCodeHandler"; // Added this line
 import { cn } from "@/lib/utils";
 import "./globals.css";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -78,6 +79,7 @@ export default function RootLayout({
             {children}
           </AccentProvider>
         </ThemeProvider>
+        <ScrollToTop />
       </body>
     </html>
   );

@@ -1,3 +1,4 @@
+// app/p/[slug]/reader-client.tsx (updated)
 "use client";
 
 import Link from "next/link";
@@ -5,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronRight, Home, LayoutDashboard, Wand2, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { usePuterAI } from "@/hooks/use-puter-ai";
+import { useReimagineEngine } from "@/hooks/use-reimagine-engine";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,9 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
     const sidebarNavRef = useRef<HTMLElement>(null);
     useSmoothScroll(sidebarNavRef);
 
+    // Reimagine Engine
+    const { enqueue, cancelForPage, isProcessingForPage } = useReimagineEngine();
+
     // Reimagine State
     const [reimagineMode, setReimagineMode] = useState("standard");
     const [storedReimaginedContent, setStoredReimaginedContent] = useState<string | null>(null);
@@ -120,6 +124,19 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setWavePhase("idle");
         }
     }, [project.slug, activePage.slug]);
+    useEffect(() => {
+  return () => {
+    cancelForPage(project.slug, activePage.slug);
+  };
+}, [project.slug, activePage.slug, cancelForPage]);
+
+
+    // Cancel any pending requests when page changes
+    useEffect(() => {
+        return () => {
+            cancelForPage(project.slug, activePage.slug);
+        };
+    }, [project.slug, activePage.slug, cancelForPage]);
 
     // Handle wave phase completion
     const handlePhaseComplete = (completedPhase: WavePhase) => {
@@ -149,22 +166,24 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         }
     };
 
-    // PuterJS AI hook for reimagination
-    const { reimagine: puterReimagine } = usePuterAI();
-
     const handleReimagine = async (mode: string = reimagineMode) => {
         if (isReimagining) return;
         
         setIsReimagining(true);
         setReimagineMode(mode);
-        setShowLoader(true); // Show loader for Reimagine
-        setWavePhase("fade-out"); // Start fade out
+        setShowLoader(true);
+        setWavePhase("fade-out");
 
         try {
-            // Use PuterJS for AI reimagination (client-side)
-            const newContent = await puterReimagine(activePage.content, mode);
+            // Use centralized engine - automatically queued and deduplicated
+            const newContent = await enqueue(
+                project.slug,
+                activePage.slug,
+                activePage.content,
+                mode
+            );
 
-            // Store content and swap - content is hidden because we're in "loading" phase
+            // Store content and swap
             setStoredReimaginedContent(newContent);
             localStorage.setItem(`reimagined-${project.slug}-${activePage.slug}`, newContent);
             setViewMode("reimagined");
@@ -173,7 +192,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setWavePhase("fade-in");
 
         } catch (error) {
-            console.error("PuterJS AI Error:", error);
+            console.error("Reimagine Engine Error:", error);
             setWavePhase("idle");
             setIsReimagining(false);
             setShowLoader(false);
@@ -184,7 +203,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         if (isReimagining) return;
         
         setIsReimagining(true);
-        setShowLoader(false); // No loader for toggle
+        setShowLoader(false);
         
         // Set pending view mode for when fade-out completes
         setPendingViewMode(viewMode === "reimagined" ? "original" : "reimagined");

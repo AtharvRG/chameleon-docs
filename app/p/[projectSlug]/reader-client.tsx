@@ -3,8 +3,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronRight, Home, LayoutDashboard, Wand2, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check } from "lucide-react";
+import { Menu, X, ChevronRight, LayoutDashboard, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check, Clock, Star } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useReimagineEngine } from "@/hooks/use-reimagine-engine";
 
@@ -17,10 +16,10 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { WaveTransition, WavePhase } from "@/components/animations/wave-transition";
 
-// Custom smooth scroll hook for sidebar
 function useSmoothScroll(ref: React.RefObject<HTMLElement>) {
     useEffect(() => {
         const element = ref.current;
@@ -33,7 +32,7 @@ function useSmoothScroll(ref: React.RefObject<HTMLElement>) {
 
         const animate = () => {
             const diff = targetScroll - currentScroll;
-            
+
             if (Math.abs(diff) > 0.5) {
                 currentScroll += diff * ease;
                 element.scrollTop = currentScroll;
@@ -72,6 +71,13 @@ function useSmoothScroll(ref: React.RefObject<HTMLElement>) {
     }, [ref]);
 }
 
+interface ReimaginationVersion {
+    id: string;
+    mode: string;
+    content: string;
+    createdAt: number;
+    label: string;
+}
 
 interface ReaderClientProps {
     project: any;
@@ -92,7 +98,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
     const searchParams = useSearchParams();
     const currentPageSlug = searchParams.get("page") || pages[0]?.slug;
 
-    // Sidebar scroll ref
     const sidebarNavRef = useRef<HTMLElement>(null);
     useSmoothScroll(sidebarNavRef);
 
@@ -101,27 +106,54 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
 
     // Reimagine State
     const [reimagineMode, setReimagineMode] = useState("standard");
-    const [storedReimaginedContent, setStoredReimaginedContent] = useState<string | null>(null);
+    const [reimaginationHistory, setReimaginationHistory] = useState<ReimaginationVersion[]>([]);
+    const [currentReimaginedContent, setCurrentReimaginedContent] = useState<string | null>(null);
+    const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"original" | "reimagined">("original");
+    const [preferredView, setPreferredView] = useState<"original" | "reimagined" | null>(null);
     const [wavePhase, setWavePhase] = useState<WavePhase>("idle");
     const [isReimagining, setIsReimagining] = useState(false);
     const [pendingContent, setPendingContent] = useState<string | null>(null);
     const [pendingViewMode, setPendingViewMode] = useState<"original" | "reimagined" | null>(null);
     const [showLoader, setShowLoader] = useState(false);
 
+    const getHistoryKey = () => `reimagined-history-${project.slug}-${activePage.slug}`;
+    const getViewPreferenceKey = () => `view-preference-${project.slug}-${activePage.slug}`;
 
-    // Load persisted content
-    useEffect(() => {
-        const key = `reimagined-${project.slug}-${activePage.slug}`;
+    const loadReimaginationHistory = useCallback(() => {
+        const key = getHistoryKey();
         const saved = localStorage.getItem(key);
         if (saved) {
-            setStoredReimaginedContent(saved);
-            setViewMode("original"); 
-            setWavePhase("idle");
+            try {
+                const history: ReimaginationVersion[] = JSON.parse(saved);
+                setReimaginationHistory(history);
+                if (history.length > 0) {
+                    const latest = history[history.length - 1];
+                    setCurrentReimaginedContent(latest.content);
+                    setActiveVersionId(latest.id);
+                }
+            } catch (e) {
+                console.error("Failed to parse reimagination history", e);
+                setReimaginationHistory([]);
+                setCurrentReimaginedContent(null);
+                setActiveVersionId(null);
+            }
         } else {
-            setStoredReimaginedContent(null);
+            setReimaginationHistory([]);
+            setCurrentReimaginedContent(null);
+            setActiveVersionId(null);
+        }
+    }, [project.slug, activePage.slug]);
+
+    const loadViewPreference = useCallback(() => {
+        const key = getViewPreferenceKey();
+        const saved = localStorage.getItem(key);
+        if (saved === "original" || saved === "reimagined") {
+            setViewMode(saved);
+            setPreferredView(saved);
+        } else {
             setViewMode("original");
-            setWavePhase("idle");
+            setPreferredView(null);
         }
     }, [project.slug, activePage.slug]);
     useEffect(() => {
@@ -138,18 +170,31 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         };
     }, [project.slug, activePage.slug, cancelForPage]);
 
-    // Handle wave phase completion
+    const persistViewPreference = useCallback((mode: "original" | "reimagined") => {
+        const key = getViewPreferenceKey();
+        localStorage.setItem(key, mode);
+        setPreferredView(mode);
+    }, [project.slug, activePage.slug]);
+
+    const clearPreferredView = useCallback(() => {
+        const key = getViewPreferenceKey();
+        localStorage.removeItem(key);
+        setPreferredView(null);
+    }, [project.slug, activePage.slug]);
+
+    useEffect(() => {
+        loadReimaginationHistory();
+        loadViewPreference();
+        setWavePhase("idle");
+    }, [loadReimaginationHistory, loadViewPreference]);
+
     const handlePhaseComplete = (completedPhase: WavePhase) => {
         if (completedPhase === "fade-out") {
-            // Fade out is complete - now either show loader or swap content
             if (showLoader) {
-                // Reimagine flow: show loader while waiting for content
                 setWavePhase("loading");
             } else {
-                // Toggle flow: swap content immediately and fade in
                 if (pendingContent !== null) {
-                    setStoredReimaginedContent(pendingContent);
-                    localStorage.setItem(`reimagined-${project.slug}-${activePage.slug}`, pendingContent);
+                    setCurrentReimaginedContent(pendingContent);
                     setPendingContent(null);
                 }
                 if (pendingViewMode !== null) {
@@ -159,12 +204,13 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                 setWavePhase("fade-in");
             }
         } else if (completedPhase === "fade-in") {
-            // Animation complete - reset state
             setWavePhase("idle");
             setIsReimagining(false);
             setShowLoader(false);
         }
     };
+
+    const { reimagine: puterReimagine } = usePuterAI();
 
     const handleReimagine = async (mode: string = reimagineMode) => {
         if (isReimagining) return;
@@ -186,9 +232,31 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             // Store content and swap
             setStoredReimaginedContent(newContent);
             localStorage.setItem(`reimagined-${project.slug}-${activePage.slug}`, newContent);
-            setViewMode("reimagined");
+            const newContent = await puterReimagine(activePage.content, mode);
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const modeLabel = REIMAGINE_MODES.find(m => m.id === mode)?.label || mode;
+
+            const newVersion: ReimaginationVersion = {
+                id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                mode,
+                content: newContent,
+                createdAt: Date.now(),
+                label: `Reimagined – ${modeLabel} – ${timeString}`,
+            };
+
+            const updatedHistory = [...reimaginationHistory, newVersion];
+            setReimaginationHistory(updatedHistory);
             
-            // Now fade in the new content
+            const historyKey = getHistoryKey();
+            localStorage.setItem(historyKey, JSON.stringify(updatedHistory));
+
+            setCurrentReimaginedContent(newContent);
+            setActiveVersionId(newVersion.id);
+            setViewMode("reimagined");
+            persistViewPreference("reimagined");
+            
             setWavePhase("fade-in");
 
         } catch (error) {
@@ -199,26 +267,63 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         }
     };
 
+    const switchToVersion = (versionId: string) => {
+        if (isReimagining) return;
+        
+        const version = reimaginationHistory.find(v => v.id === versionId);
+        if (!version) return;
+
+        setIsReimagining(true);
+        setShowLoader(false);
+        setPendingContent(version.content);
+        setPendingViewMode("reimagined");
+        setActiveVersionId(versionId);
+        setWavePhase("fade-out");
+    };
+
     const toggleView = () => {
         if (isReimagining) return;
         
         setIsReimagining(true);
         setShowLoader(false);
         
-        // Set pending view mode for when fade-out completes
-        setPendingViewMode(viewMode === "reimagined" ? "original" : "reimagined");
+        if (viewMode === "original" && activeVersionId) {
+            const version = reimaginationHistory.find(v => v.id === activeVersionId);
+            if (version) {
+                setPendingContent(version.content);
+            }
+        } else if (viewMode === "reimagined") {
+            setActiveVersionId(null);
+        }
         
-        // Start fade out
+        const targetView = viewMode === "reimagined" ? "original" : "reimagined";
+        setPendingViewMode(targetView);
+        
         setWavePhase("fade-out");
     };
 
-    const displayContent = viewMode === "reimagined" && storedReimaginedContent 
-        ? storedReimaginedContent 
+    const restoreReimaginationVersion = useCallback((versionId: string) => {
+        const version = reimaginationHistory.find(v => v.id === versionId);
+        if (!version) {
+            console.error(`Version ${versionId} not found in history`);
+            return;
+        }
+
+        setCurrentReimaginedContent(version.content);
+        setActiveVersionId(version.id);
+        setViewMode("reimagined");
+        persistViewPreference("reimagined");
+    }, [reimaginationHistory, persistViewPreference]);
+
+    const displayContent = viewMode === "reimagined" && currentReimaginedContent 
+        ? currentReimaginedContent 
         : activePage.content;
+
+    const hasVersions = reimaginationHistory.length > 0;
+    const isViewPreferred = preferredView === viewMode;
 
     return (
         <div className="flex min-h-screen bg-background text-foreground">
-            {/* Mobile Sidebar Overlay */}
             {isSidebarOpen && (
                 <div 
                     className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
@@ -226,13 +331,11 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                 />
             )}
 
-            {/* Sidebar */}
             <aside className={cn(
                 "fixed inset-y-0 left-0 z-50 w-72 transform border-r border-border bg-card/50 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0",
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="flex h-full flex-col" data-lenis-prevent>
-                    {/* Sidebar Header */}
                     <div className="flex h-16 items-center justify-between border-b border-border px-6">
                         <Link href="/" className="flex items-center gap-2">
                             <ChameleonLogo size={24} />
@@ -248,7 +351,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                         </Button>
                     </div>
 
-                    {/* Project Info */}
                     <div className="border-b border-border p-6">
                         <div className="flex items-center gap-3 mb-2">
                             <div 
@@ -266,10 +368,8 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                         </div>
                     </div>
 
-                    {/* Navigation */}
                     <nav ref={sidebarNavRef} className="flex-1 overflow-y-auto p-4 space-y-1 overscroll-contain">
                         {(() => {
-                            // Group pages by section
                             const groupedPages = pages.reduce((acc: any, page: any) => {
                                 const section = page.section || "Uncategorized";
                                 if (!acc[section]) acc[section] = [];
@@ -277,7 +377,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                 return acc;
                             }, {});
                             
-                            // Sort sections - use project sectionOrder if available
                             const availableSections = Object.keys(groupedPages);
                             const storedOrder = project.sectionOrder || [];
                             const orderedFromStorage = storedOrder.filter((s: string) => availableSections.includes(s));
@@ -286,7 +385,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                             
                             return sections.map(section => (
                                 <div key={section} className={section !== "Uncategorized" ? "pt-4" : ""}>
-                                    {/* Section Header - only show for non-Uncategorized */}
                                     {section !== "Uncategorized" && (
                                         <div className="flex items-center gap-2 pl-3 pr-3 py-1.5 mb-2 border-l-2 border-primary/60">
                                             <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
@@ -294,7 +392,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                             </span>
                                         </div>
                                     )}
-                                    {/* Pages in this section */}
                                     <div className={cn("space-y-0.5", section !== "Uncategorized" && "ml-1")}>
                                         {groupedPages[section].map((page: any) => {
                                             const isActive = currentPageSlug === page.slug;
@@ -322,7 +419,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                         })()}
                     </nav>
 
-                    {/* Sidebar Footer */}
                     <div className="border-t border-border p-4">
                         <Link href="/dashboard">
                             <Button variant="outline" size="sm" className="w-full justify-start gap-2">
@@ -334,10 +430,8 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                 </div>
             </aside>
 
-            {/* Main Content */}
             <main className="flex-1 lg:pl-72">
-                {/* Header with Reimagine Controls */}
-                <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 lg:px-6">
+                <header className="sticky top-0 z-30 flex h-16 items-center justify-between px-4 lg:px-6 bg-background/80 backdrop-blur-md border-b border-border">
                     <div className="flex items-center gap-4">
                         <Button 
                             variant="ghost" 
@@ -351,21 +445,57 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Toggle Button (Original <-> Reimagined) */}
-                        {storedReimaginedContent && !isReimagining ? (
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={toggleView}
-                                disabled={wavePhase !== "idle"}
-                                className="gap-2"
-                            >
-                                <RotateCcw className="h-4 w-4" />
-                                {viewMode === "reimagined" ? "Original" : "Show Reimagined"}
-                            </Button>
-                        ) : null}
+                        {hasVersions && !isReimagining && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="gap-2"
+                                        disabled={wavePhase !== "idle"}
+                                    >
+                                        <Clock className="h-4 w-4" />
+                                        {viewMode === "original" ? "Original" : reimaginationHistory.find(v => v.id === activeVersionId)?.label || "Version"}
+                                        <ChevronDown className="h-3 w-3 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-64">
+                                    <DropdownMenuItem 
+                                        onClick={() => {
+                                            if (viewMode !== "original") {
+                                                setIsReimagining(true);
+                                                setShowLoader(false);
+                                                setPendingViewMode("original");
+                                                setActiveVersionId(null);
+                                                setWavePhase("fade-out");
+                                            }
+                                        }}
+                                        className="gap-2 cursor-pointer"
+                                    >
+                                        <div className="flex-1 text-sm font-medium">Original</div>
+                                        {viewMode === "original" && <Check className="h-4 w-4" />}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    {reimaginationHistory.slice().reverse().map((version) => (
+                                        <DropdownMenuItem 
+                                            key={version.id}
+                                            onClick={() => {
+                                                if (activeVersionId !== version.id) {
+                                                    switchToVersion(version.id);
+                                                }
+                                            }}
+                                            className="gap-2 cursor-pointer"
+                                        >
+                                            <div className="flex-1">
+                                                <div className="text-sm font-medium">{version.label}</div>
+                                            </div>
+                                            {activeVersionId === version.id && viewMode === "reimagined" && <Check className="h-4 w-4" />}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
 
-                        {/* Reimagine Controls */}
                         <div className="flex items-center gap-2 bg-muted/50 p-1 rounded-lg border border-border">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -415,7 +545,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                     </div>
                 </header>
 
-                {/* Content Area */}
                 <div className="container max-w-4xl py-12 lg:py-16 relative">
                     <div className="mb-8">
                         <h1 className="font-heading text-4xl font-bold tracking-tight lg:text-5xl">
@@ -426,7 +555,45 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                         </p>
                     </div>
 
-                    {/* Wave Transition Animation */}
+                    {viewMode === "reimagined" && currentReimaginedContent && !isViewPreferred && wavePhase === "idle" && (
+                        <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+                            <div className="flex items-center gap-2 text-sm">
+                                <Star className="h-4 w-4 text-primary" />
+                                <span className="text-foreground/90">
+                                    Viewing AI-reimagined content
+                                </span>
+                            </div>
+                            <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => persistViewPreference("reimagined")}
+                                className="gap-2 border-primary/30 hover:bg-primary/10"
+                            >
+                                <Star className="h-3.5 w-3.5" />
+                                Save as my preferred view
+                            </Button>
+                        </div>
+                    )}
+
+                    {preferredView && wavePhase === "idle" && (
+                        <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 px-4 py-2.5">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Check className="h-3.5 w-3.5" />
+                                <span>
+                                    Your preferred view: <strong className="text-foreground">{preferredView === "reimagined" ? "Reimagined" : "Original"}</strong>
+                                </span>
+                            </div>
+                            <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={clearPreferredView}
+                                className="h-7 text-xs"
+                            >
+                                Clear preference
+                            </Button>
+                        </div>
+                    )}
+
                     <WaveTransition 
                         phase={wavePhase} 
                         showLoader={showLoader}

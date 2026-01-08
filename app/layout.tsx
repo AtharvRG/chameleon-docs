@@ -7,6 +7,7 @@ import { CommandMenu } from "@/components/command-menu";
 import SmoothScroll from "@/components/smooth-scroll";
 import { cn } from "@/lib/utils";
 import "./globals.css";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -76,6 +77,7 @@ export default function RootLayout({
             {children}
           </AccentProvider>
         </ThemeProvider>
+        <ScrollToTop />
       </body>
     </html>
   );

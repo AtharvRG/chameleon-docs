@@ -1,11 +1,11 @@
-// app/p/[slug]/reader-client.tsx (updated)
 "use client";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Menu, X, ChevronRight, LayoutDashboard, RefreshCw, RotateCcw, Sparkles, ChevronDown, Check, Clock, Star } from "lucide-react";
+import { Menu, X, ChevronRight, LayoutDashboard, RefreshCw, Sparkles, ChevronDown, Check, Clock, Star } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useReimagineEngine } from "@/hooks/use-reimagine-engine";
+import { usePreferenceEngine } from "@/hooks/use-preference-engine";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -101,24 +101,24 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
     const sidebarNavRef = useRef<HTMLElement>(null);
     useSmoothScroll(sidebarNavRef);
 
-    // Reimagine Engine
-    const { enqueue, cancelForPage, isProcessingForPage } = useReimagineEngine();
+    const { enqueue, cancelForPage } = useReimagineEngine();
+    const { profile, setPreferredMode, setPreferredView, clearPreferredView } = usePreferenceEngine(project.slug);
 
-    // Reimagine State
-    const [reimagineMode, setReimagineMode] = useState("standard");
+    const [reimagineMode, setReimagineMode] = useState(profile.preferredReimagineMode);
     const [reimaginationHistory, setReimaginationHistory] = useState<ReimaginationVersion[]>([]);
     const [currentReimaginedContent, setCurrentReimaginedContent] = useState<string | null>(null);
     const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"original" | "reimagined">("original");
-    const [preferredView, setPreferredView] = useState<"original" | "reimagined" | null>(null);
     const [wavePhase, setWavePhase] = useState<WavePhase>("idle");
     const [isReimagining, setIsReimagining] = useState(false);
     const [pendingContent, setPendingContent] = useState<string | null>(null);
     const [pendingViewMode, setPendingViewMode] = useState<"original" | "reimagined" | null>(null);
     const [showLoader, setShowLoader] = useState(false);
 
-    const getHistoryKey = () => `reimagined-history-${project.slug}-${activePage.slug}`;
-    const getViewPreferenceKey = () => `view-preference-${project.slug}-${activePage.slug}`;
+    const getHistoryKey = useCallback(() => 
+        `chameleon-history-${project.slug}-${activePage.slug}`, 
+        [project.slug, activePage.slug]
+    );
 
     const loadReimaginationHistory = useCallback(() => {
         const key = getHistoryKey();
@@ -143,50 +143,37 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setCurrentReimaginedContent(null);
             setActiveVersionId(null);
         }
-    }, [project.slug, activePage.slug]);
+    }, [getHistoryKey]);
 
-    const loadViewPreference = useCallback(() => {
-        const key = getViewPreferenceKey();
-        const saved = localStorage.getItem(key);
-        if (saved === "original" || saved === "reimagined") {
-            setViewMode(saved);
-            setPreferredView(saved);
+    const applyViewPreference = useCallback(() => {
+        if (profile.preferredView === "reimagined" && currentReimaginedContent) {
+            setViewMode("reimagined");
         } else {
             setViewMode("original");
-            setPreferredView(null);
         }
-    }, [project.slug, activePage.slug]);
+    }, [profile.preferredView, currentReimaginedContent]);
+
     useEffect(() => {
-  return () => {
-    cancelForPage(project.slug, activePage.slug);
-  };
-}, [project.slug, activePage.slug, cancelForPage]);
+        loadReimaginationHistory();
+    }, [loadReimaginationHistory]);
 
+    useEffect(() => {
+        applyViewPreference();
+    }, [applyViewPreference]);
 
-    // Cancel any pending requests when page changes
+    useEffect(() => {
+        setReimagineMode(profile.preferredReimagineMode);
+    }, [profile.preferredReimagineMode]);
+
     useEffect(() => {
         return () => {
             cancelForPage(project.slug, activePage.slug);
         };
     }, [project.slug, activePage.slug, cancelForPage]);
 
-    const persistViewPreference = useCallback((mode: "original" | "reimagined") => {
-        const key = getViewPreferenceKey();
-        localStorage.setItem(key, mode);
-        setPreferredView(mode);
-    }, [project.slug, activePage.slug]);
-
-    const clearPreferredView = useCallback(() => {
-        const key = getViewPreferenceKey();
-        localStorage.removeItem(key);
-        setPreferredView(null);
-    }, [project.slug, activePage.slug]);
-
     useEffect(() => {
-        loadReimaginationHistory();
-        loadViewPreference();
         setWavePhase("idle");
-    }, [loadReimaginationHistory, loadViewPreference]);
+    }, [activePage.slug]);
 
     const handlePhaseComplete = (completedPhase: WavePhase) => {
         if (completedPhase === "fade-out") {
@@ -210,29 +197,21 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         }
     };
 
-    const { reimagine: puterReimagine } = usePuterAI();
-
     const handleReimagine = async (mode: string = reimagineMode) => {
         if (isReimagining) return;
         
         setIsReimagining(true);
-        setReimagineMode(mode);
         setShowLoader(true);
         setWavePhase("fade-out");
 
         try {
-            // Use centralized engine - automatically queued and deduplicated
+            // enqueue now uses cache internally - cache hits resolve immediately
             const newContent = await enqueue(
                 project.slug,
                 activePage.slug,
                 activePage.content,
                 mode
             );
-
-            // Store content and swap
-            setStoredReimaginedContent(newContent);
-            localStorage.setItem(`reimagined-${project.slug}-${activePage.slug}`, newContent);
-            const newContent = await puterReimagine(activePage.content, mode);
 
             const now = new Date();
             const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -255,7 +234,6 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setCurrentReimaginedContent(newContent);
             setActiveVersionId(newVersion.id);
             setViewMode("reimagined");
-            persistViewPreference("reimagined");
             
             setWavePhase("fade-in");
 
@@ -265,6 +243,19 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
             setIsReimagining(false);
             setShowLoader(false);
         }
+    };
+
+    const handleModeChange = (mode: string) => {
+        setReimagineMode(mode);
+        setPreferredMode(mode);
+    };
+
+    const handleSetPreferredView = () => {
+        setPreferredView(viewMode);
+    };
+
+    const handleClearPreferredView = () => {
+        clearPreferredView();
     };
 
     const switchToVersion = (versionId: string) => {
@@ -281,46 +272,22 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         setWavePhase("fade-out");
     };
 
-    const toggleView = () => {
-        if (isReimagining) return;
+    const switchToOriginal = () => {
+        if (isReimagining || viewMode === "original") return;
         
         setIsReimagining(true);
         setShowLoader(false);
-        
-        if (viewMode === "original" && activeVersionId) {
-            const version = reimaginationHistory.find(v => v.id === activeVersionId);
-            if (version) {
-                setPendingContent(version.content);
-            }
-        } else if (viewMode === "reimagined") {
-            setActiveVersionId(null);
-        }
-        
-        const targetView = viewMode === "reimagined" ? "original" : "reimagined";
-        setPendingViewMode(targetView);
-        
+        setPendingViewMode("original");
+        setActiveVersionId(null);
         setWavePhase("fade-out");
     };
-
-    const restoreReimaginationVersion = useCallback((versionId: string) => {
-        const version = reimaginationHistory.find(v => v.id === versionId);
-        if (!version) {
-            console.error(`Version ${versionId} not found in history`);
-            return;
-        }
-
-        setCurrentReimaginedContent(version.content);
-        setActiveVersionId(version.id);
-        setViewMode("reimagined");
-        persistViewPreference("reimagined");
-    }, [reimaginationHistory, persistViewPreference]);
 
     const displayContent = viewMode === "reimagined" && currentReimaginedContent 
         ? currentReimaginedContent 
         : activePage.content;
 
     const hasVersions = reimaginationHistory.length > 0;
-    const isViewPreferred = preferredView === viewMode;
+    const isViewPreferred = profile.preferredView === viewMode;
 
     return (
         <div className="flex min-h-screen bg-background text-foreground">
@@ -461,15 +428,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-64">
                                     <DropdownMenuItem 
-                                        onClick={() => {
-                                            if (viewMode !== "original") {
-                                                setIsReimagining(true);
-                                                setShowLoader(false);
-                                                setPendingViewMode("original");
-                                                setActiveVersionId(null);
-                                                setWavePhase("fade-out");
-                                            }
-                                        }}
+                                        onClick={switchToOriginal}
                                         className="gap-2 cursor-pointer"
                                     >
                                         <div className="flex-1 text-sm font-medium">Original</div>
@@ -513,7 +472,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                                     {REIMAGINE_MODES.map((mode) => (
                                         <DropdownMenuItem 
                                             key={mode.id}
-                                            onClick={() => setReimagineMode(mode.id)}
+                                            onClick={() => handleModeChange(mode.id)}
                                             className="gap-2 cursor-pointer text-xs"
                                         >
                                             {mode.label}
@@ -566,7 +525,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                             <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => persistViewPreference("reimagined")}
+                                onClick={handleSetPreferredView}
                                 className="gap-2 border-primary/30 hover:bg-primary/10"
                             >
                                 <Star className="h-3.5 w-3.5" />
@@ -575,18 +534,18 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                         </div>
                     )}
 
-                    {preferredView && wavePhase === "idle" && (
+                    {profile.preferredView && wavePhase === "idle" && (
                         <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 px-4 py-2.5">
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <Check className="h-3.5 w-3.5" />
                                 <span>
-                                    Your preferred view: <strong className="text-foreground">{preferredView === "reimagined" ? "Reimagined" : "Original"}</strong>
+                                    Your preferred view: <strong className="text-foreground">{profile.preferredView === "reimagined" ? "Reimagined" : "Original"}</strong>
                                 </span>
                             </div>
                             <Button 
                                 size="sm" 
                                 variant="ghost"
-                                onClick={clearPreferredView}
+                                onClick={handleClearPreferredView}
                                 className="h-7 text-xs"
                             >
                                 Clear preference

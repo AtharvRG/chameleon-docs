@@ -4,11 +4,15 @@
 
 ![Project Status](https://img.shields.io/badge/Status-Beta-blue)
 
+---
+
 ## ✨ Overview
 
-**Chameleon Docs** is a next-generation documentation platform designed to be visually comfortable and highly intelligent. It moves away from static, boring wikis to create a dynamic, adaptive environment for your team's knowledge.
+**Chameleon Docs** is a next-generation documentation platform leveraging **Next.js React Server Components (RSC)** and **Google Gemini AI**. It moves away from static, boring wikis to create a dynamic environment where the interface "morphs" based on content context and user intent.
 
-Built with **Next.js** and **React Server Components**, it prioritizes zero-latency performance while delivering a premium user experience with smooth animations and a refined design system.
+Built for **ECWOC'26**, it prioritizes zero-latency performance while delivering a premium user experience through glassmorphism and micro-interactions.
+
+---
 
 ## 🚀 Key Features
 
@@ -18,6 +22,8 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
 -   **🦎 Adaptive Interface:** A "Chameleon" theme that adapts to user preferences, featuring a command menu (`cmdk`) for keyboard-first navigation.
 -   **🔐 Secure Authentication:** Robust auth system using **NextAuth.js** and **MongoDB**.
 -   **🌊 Smooth Experience:** Enhanced scrolling with **Lenis** and fluid animations with **Framer Motion**.
+
+---
 
 ## 🛠️ Tech Stack
 
@@ -31,6 +37,50 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
 -   **UI Components:** [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/)
 -   **Markdown:** `react-markdown`, `remark-gfm`, `react-syntax-highlighter`
 
+---
+
+## 🧠 Architecture
+To empower our contributors, we’ve visualized the internal "magic" that keeps the platform performant while handling complex AI logic.
+
+### 1. RSC vs. Client Boundary
+We use a **"Server-First"** approach. Data fetching and AI orchestration happen on the server to keep the client-side bundle lean and fast.
+```mermaid
+graph TD
+    subgraph Server_Boundary ["Server (Node.js/RSC)"]
+        A[app/page.tsx] --> B[Mongoose Models]
+        A --> C[Server Actions]
+        C --> D[Google Gemini SDK]
+    end
+
+    subgraph Client_Boundary ["Client (Browser)"]
+        E[Framer Motion Animations]
+        F[Radix UI Primitives]
+        G[Lenis Smooth Scroll]
+    end
+
+    C -- "JSON Stream" --> E
+    B -- "Hydrated Props" --> F
+```
+
+### 2. Adaptive AI Content Flow
+This flow shows how the Google Generative AI SDK integrates with Next.js Server Actions to process and organize documentation:
+```mermaid
+sequenceDiagram
+    participant U as User (Client)
+    participant SA as Server Action
+    participant G as Gemini AI
+    participant DB as MongoDB
+
+    U->>SA: Submit Content/Query
+    SA->>G: Context + System Prompt
+    Note over G: AI processes structure & tags
+    G-->>SA: Structured JSON Response
+    SA->>DB: Save to Mongoose Model
+    SA-->>U: Refresh UI via revalidatePath()
+```
+
+---
+
 ## 🏁 Getting Started
 
 ### Prerequisites
@@ -39,40 +89,34 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
 -   MongoDB Database (Local or Atlas)
 
 ### Installation
-
-1.  **Clone the repository:**
+#### 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/AtharvRG/chameleon-docs.git
     cd chameleon-docs
     ```
-
-2.  **Install dependencies:**
+#### 2.  **Install dependencies:**
     ```bash
     npm install
     ```
-
-3.  **Set up environment variables:**
+#### 3.  **Set up environment variables:**
     Create a `.env.local` file in the root directory and add the following:
     ```env
     # Database
     MONGODB_URI=your_mongodb_connection_string
-
     # Authentication
-    AUTH_SECRET=your_nextauth_secret
-    
+    AUTH_SECRET=your_nextauth_secret   
     # AI
-    GOOGLE_API_KEY=your_gemini_api_key
-    
+    GOOGLE_API_KEY=your_gemini_api_key    
     # App
     NEXT_PUBLIC_APP_URL=http://localhost:3000
     ```
-
-4.  **Run the development server:**
+#### 4.  **Run the development server:**
     ```bash
     npm run dev
     ```
+#### 5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
+---
 
 ## 📂 Project Structure
 
@@ -90,8 +134,9 @@ chameleon-docs/
 └── types/          # TypeScript type definitions
 ```
 
-## 🤝 Contributing
+---
 
+## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1.  Fork the project
@@ -99,6 +144,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4.  Push to the branch (`git push origin feature/AmazingFeature`)
 5.  Open a Pull Request
+
+---
 
 ## 📄 License
 

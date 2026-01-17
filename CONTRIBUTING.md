@@ -1,159 +1,53 @@
-# Contributing to Chameleon Docs 🦎
+# 🦎 Contributing to Chameleon Docs
 
-Thank you for your interest in contributing to **Chameleon Docs**!
-This project aims to reimagine documentation with performance, intelligence, and beautiful design at its core. Contributions of all kinds are welcome and appreciated.
+First of all, thank you for helping us reimagine documentation! Whether you are fixing a bug, improving the glassmorphism UI, or optimizing the Gemini AI logic, your contributions are vital to making Chameleon Docs thrive for **ECWOC'26**.
 
-## 🌟 Ways to Contribute
+---
 
-You can contribute by:
+## 🛠️ Tech Stack & Requirements
+To contribute effectively, ensure you are comfortable with:
+* **Framework:** Next.js 14+ (App Router & Server Actions)
+* **Styling:** Tailwind CSS, Framer Motion, and Lenis (for smooth scrolling)
+* **AI:** Google Generative AI SDK (Gemini)
+* **Database:** MongoDB (Mongoose)
 
-* Fixing bugs or improving performance
-* Adding new features or enhancements
-* Improving UI/UX or accessibility
-* Enhancing AI-assisted workflows
-* Writing or improving documentation
-* Refactoring code for clarity or maintainability
+---
 
-If you’re unsure where to start, check open issues or propose an idea via a new issue.
+## 🚀 Getting Started
 
-## 🛠️ Development Setup
-Prerequisites
+### 1. Branching Strategy
+We use specific prefixes to keep the history clean:
+* `feature/` : New UI or AI functionality (e.g., `feature/cmdk-logic`)
+* `bugfix/` : Fixing issues or styling glitches (e.g., `bugfix/auth-redirect`)
+* `docs/` : Updates to documentation or README.
+* `refactor/` : Improving code structure without changing features.
 
-* Node.js 18+
-* MongoDB (local or Atlas)
-* Basic familiarity with Next.js App Router and TypeScript
+### 2. Local Setup
+1. **Fork** the repository and clone it.
+2. Run `npm install`.
+3. Create a `.env.local` file (refer to the README for required keys like `GOOGLE_API_KEY`).
+4. Run `npm run dev` to start the local server.
 
-1. ***Fork and Clone the Repository**
-```bash
-git clone https://github.com/AtharvRG/chameleon-docs.git
-cd chameleon-docs
-```
-2. ***Install Dependencies***
-```bash
-npm install
-```
+---
 
-3. ***Environment Variables***
-Create a .env.local file in the project root:
+## 🎨 Contribution Guidelines
 
-## Database
-```bash
-MONGODB_URI=your_mongodb_connection_string
-```
+### Code Style
+* **TypeScript:** No `any` types. Define interfaces in the `types/` folder.
+* **UI Components:** Use the atomic design system. Small primitives go in `components/ui/`.
+* **Linting:** Run `npm run lint` before committing to ensure there are no errors.
 
-## Authentication
-```bash
-AUTH_SECRET=your_nextauth_secret
-```
+### Commit Messages
+Please use clear, descriptive commit messages:
+* `feat: add gemini-powered auto-tagging`
+* `fix: resolve hydration error in glassmorphism cards`
 
-## AI
-```bash
-GOOGLE_API_KEY=your_gemini_api_key
-```
+---
 
-## App
-```bash
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
+## 📥 Submitting a Pull Request
+1. Ensure your branch is up to date with `main`.
+2. Fill out the **Pull Request Template** completely.
+3. If you changed the UI, **screenshots or GIFs** are mandatory.
+4. Link the PR to an existing issue (e.g., `Closes #12`).
 
-4. ***Run the Development Server***
-```bash
-npm run dev
-```
-
-Open http://localhost:3000
- in your browser.
-
-## 🧱 Project Architecture Overview
-chameleon-docs/
-├── actions/        # Server actions (mutations, AI calls)
-├── app/            # Next.js App Router pages and layouts
-├── components/     # Reusable UI components
-│   ├── ui/         # Atomic UI primitives
-│   └── ...         # Feature-level components
-├── hooks/          # Custom React hooks
-├── lib/            # Utilities, configs, helpers
-├── models/         # Mongoose schemas and models
-├── public/         # Static assets
-└── types/          # Shared TypeScript types
-
-
-Please follow the existing structure when adding new code.
-
-## 🎨 Code Style & Guidelines
-
-* TypeScript-first: Avoid ```any``` unless absolutely necessary
-* Follow existing Tailwind CSS patterns and design tokens
-* Prefer Server Components and Server Actions where appropriate
-* Keep components small, composable, and accessible
-* Use existing UI primitives instead of creating duplicates
-* Ensure animations are smooth and intentional (no excess motion)
-
-## 🧪 Testing & Quality
-
-While the project evolves:
-
-* Manually test UI and interactions before submitting a PR
-* Verify no console errors or hydration warnings
-* Ensure authentication and AI features fail gracefully
-* Avoid breaking existing routes or layouts
-
-(Automated tests may be added in future iterations.)
-
-## 🔀 Contribution Workflow
-
-1. Create a new branch:
-```bash
-git checkout -b feature/your-feature-name
-```
-
-2. Make your changes.
-
-Commit with a clear message:
-```bash
-git commit -m "Add: short description of change"
-```
-
-3. Push to your fork:
-```bash
-git push origin feature/your-feature-name
-```
-
-4. Open a Pull Request against the main branch.
-
-## 📦 Pull Request Guidelines
-
-When opening a PR, please:
-
-* Clearly describe what you changed and why
-* Include screenshots or screen recordings for UI changes
-* Mention any architectural or design trade-offs
-* Keep PRs focused and reasonably sized
-* Ensure no secrets or sensitive data are committed
-* A PR template (if present) should be filled out.
-
-## 🔐 Security & AI Usage
-
-* Never commit API keys or secrets
-* Do not log sensitive user data
-* AI-generated content should be reviewed and editable by users
-* Follow ethical usage of generative AI features
-
-## 💬 Getting Help
-
-If you’re stuck or want feedback before implementing:
-
-* Open an issue describing your idea or question
-* Start a GitHub discussion (if enabled)
-* Early communication is encouraged.
-
-## 🙌 Code of Conduct
-
-By contributing, you agree to uphold a respectful, inclusive, and constructive environment. Harassment, discrimination, or toxic behavior will not be tolerated.
-
-**❤️ Thank You**
-
-Chameleon Docs is built to make knowledge beautiful, fast, and alive.
-Every contribution—big or small—helps move that vision forward.
-
-Happy building 🦎✨
+Thank you for building with us! 🦎

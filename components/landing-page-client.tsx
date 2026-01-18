@@ -7,11 +7,11 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight, Star } from "lucide-react";
 import { FaGithub, FaXTwitter } from "react-icons/fa6";
 import MagneticButton from "@/components/ui/magnetic-button";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 export default function LandingPageClient({ session }: { session: any }) {
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
@@ -19,8 +19,8 @@ export default function LandingPageClient({ session }: { session: any }) {
 
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
-  // Parallax for feature images
-  const featureRef = useRef(null);
+  const featureRef = useRef<HTMLDivElement | null>(null);
+
   const { scrollYProgress: featureScroll } = useScroll({
     target: featureRef,
     offset: ["start end", "end start"],
@@ -32,104 +32,76 @@ export default function LandingPageClient({ session }: { session: any }) {
   return (
     <div
       ref={containerRef}
-      className="relative min-h-[200vh] bg-background text-foreground selection:bg-accent/30 selection:text-accent-foreground"
+      className="relative min-h-[200vh] bg-background text-foreground overflow-x-hidden"
     >
-      {/* Floating Navbar */}
-      <nav className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-md shadow-lg shadow-black/5 transition-all hover:bg-white/10 hover:border-white/20 hover:scale-[1.01]">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-heading font-bold text-lg tracking-tight"
-          >
-            <span>Chameleon Docs</span>
+      {/* NAVBAR */}
+      <nav className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
+        <div className="flex w-full max-w-sm items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-md shadow-lg sm:w-auto">
+          <Link href="/" className="font-heading font-bold text-sm sm:text-lg">
+            Chameleon Docs
           </Link>
-          <div className="mx-2 h-4 w-[1px] bg-border/50" />
-          <div className="flex items-center gap-1">
+
+          <div className="mx-2 hidden h-4 w-px bg-border/50 sm:block" />
+
+          <div className="ml-auto flex items-center gap-1 sm:ml-0">
             {session ? (
               <Link href="/dashboard">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 rounded-full hover:bg-white/10"
-                >
+                <Button variant="ghost" size="sm">
                   Dashboard
                 </Button>
               </Link>
             ) : (
-              <Link href="/login">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 rounded-full hover:bg-white/10"
-                >
-                  Log In
-                </Button>
-              </Link>
-            )}
-            {!session && (
-              <Link href="/signup">
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="h-8 rounded-full px-4 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-transform hover:scale-105"
-                >
-                  Get Started
-                </Button>
-              </Link>
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Log In
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button size="sm">Get Started</Button>
+                </Link>
+              </>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative h-screen flex flex-col items-center justify-center overflow-hidden">
+      {/* HERO */}
+      <section className="relative flex h-screen flex-col items-center justify-center px-4">
         <div className="container relative z-10 flex flex-col items-center">
-          {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-12 flex items-center rounded-full border border-black/5 bg-secondary/50 px-4 py-1.5 text-sm font-medium backdrop-blur-sm"
+            transition={{ duration: 0.8 }}
+            className="mt-16 flex items-center rounded-full bg-secondary/50 px-4 py-1.5 text-sm"
           >
-            <Star className="h-3.5 w-3.5 fill-accent text-accent" />
-            <span>⠀v1 Beta</span>
+            <Star className="h-4 w-4 text-accent" />
+            <span className="ml-2">v1 Beta</span>
           </motion.div>
 
-          {/* Massive Typography */}
-          <div className="relative -mt-4 z-20 flex flex-col items-center text-center">
-            <h1 className="font-heading text-[13vw] leading-[0.85] tracking-tighter text-foreground">
-              <motion.span
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                className="block overflow-hidden"
-              >
-                <span className="block ">Documentation</span>
-              </motion.span>
-              <motion.span
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                className="block overflow-hidden italic text-accent pb-9" // Reduced padding-bottom
-              >
-                <span className="block">Reimagined</span>
-              </motion.span>
+          <div className="mt-6 text-center">
+            <h1 className="font-heading text-[12vw] leading-[0.9] sm:text-[13vw]">
+              <span className="block">Documentation</span>
+              <span className="block italic text-accent">Reimagined</span>
             </h1>
           </div>
 
-          {/* Floating Images (Parallax) */}
-          <motion.div style={{ y }} className="absolute inset-0 z-0 pointer-events-none">
-            <div className="absolute top-[20%] left-[5%] w-[25vw] aspect-[3/4] overflow-hidden rounded-lg opacity-80 grayscale hover:grayscale-0 transition-all duration-700">
+          {/* Floating Images */}
+          <motion.div
+            style={{ y }}
+            className="pointer-events-none absolute inset-0 hidden sm:block"
+          >
+            <div className="absolute top-[20%] left-[5%] w-[25vw] rounded-lg overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop"
+                src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"
                 alt="Abstract"
                 fill
                 className="object-cover"
               />
             </div>
-            <div className="absolute bottom-[10%] right-[5%] w-[30vw] aspect-[4/3] overflow-hidden rounded-lg opacity-80 grayscale hover:grayscale-0 transition-all duration-700">
+            <div className="absolute bottom-[10%] right-[5%] w-[30vw] rounded-lg overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=2668&auto=format&fit=crop"
+                src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe"
                 alt="Minimal"
                 fill
                 className="object-cover"
@@ -137,26 +109,26 @@ export default function LandingPageClient({ session }: { session: any }) {
             </div>
           </motion.div>
 
-          {/* Description & CTA */}
+          {/* CTA */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="mt-5 max-w-xl text-center z-30"
+            transition={{ delay: 0.6 }}
+            className="mt-6 text-center"
           >
-            <p className="text-lg text-foreground md:text-xl font-medium leading-relaxed drop-shadow-sm">
+            <p className="text-lg">
               Craft living knowledge bases that adapt to your team.
-              <span className="text-accent font-bold"> Beautiful by default.</span>
+              <span className="font-bold text-accent"> Beautiful by default.</span>
             </p>
-            <div className="mt-8 flex items-center justify-center gap-4">
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
               <Link href={session ? "/dashboard" : "/signup"}>
-                <MagneticButton size="lg" className="group">
-                  Start Building
-                  <ArrowUpRight className="ml-2 h-4 w-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
+                <MagneticButton>
+                  Start Building <ArrowUpRight className="ml-2 h-4 w-4" />
                 </MagneticButton>
               </Link>
               <Link href="https://github.com/AtharvRG/chameleon-docs">
-                <MagneticButton variant="outline" size="lg">
+                <MagneticButton variant="outline">
                   <FaGithub className="mr-2 h-4 w-4" />
                   GitHub
                 </MagneticButton>
@@ -166,121 +138,76 @@ export default function LandingPageClient({ session }: { session: any }) {
         </div>
       </section>
 
-      {/* Marquee Section */}
-      <div className="relative z-20 border-y border-border bg-background py-5 overflow-hidden">
-        <div className="flex animate-marquee whitespace-nowrap">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <span
-              key={i}
-              className="mx-8 font-heading text-4xl font-light italic text-muted-foreground/50"
-            >
-              Beautiful • Adaptive • Intelligent •
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Feature Grid (Magazine Layout) */}
-      <section ref={featureRef} className="container py-32 space-y-32">
-        {/* Feature 1: Image Left, Text Right */}
-        <div className="grid grid-cols-1 gap-y-12 md:grid-cols-12 md:gap-x-12 items-center">
+      {/* FEATURES */}
+      <section ref={featureRef} className="container space-y-32 px-4 py-32">
+        <div className="grid md:grid-cols-12 gap-12 items-center">
           <div className="md:col-span-7">
-            <motion.div
-              style={{ y: featureY }}
-              className="relative aspect-[16/9] overflow-hidden rounded-sm bg-secondary"
-            >
+            <motion.div style={{ y: featureY }} className="relative aspect-video">
               <Image
-                src="https://images.pexels.com/photos/17709307/pexels-photo-17709307/free-photo-of-spiral-modern-structure.jpeg"
+                src="https://images.pexels.com/photos/17709307/pexels-photo-17709307.jpeg"
                 alt="Office"
                 fill
-                className="object-cover transition-transform duration-700"
+                className="object-cover"
               />
             </motion.div>
           </div>
-          <div className="md:col-span-5 flex flex-col justify-center space-y-6">
-            <span className="font-mono text-xs uppercase tracking-widest text-accent underline">
-              01 — Zero Latency
-            </span>
-            <h2 className="font-heading text-5xl font-medium leading-tight">
-              Instant <br /> <span className="italic text-accent">Gratification</span>
+          <div className="md:col-span-5">
+            <h2 className="font-heading text-4xl">
+              Instant <span className="italic text-accent">Gratification</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
-              Powered by Next.js 14 and React Server Components. Pages load instantly,
-              keeping your flow uninterrupted.
-            </p>
           </div>
         </div>
 
-        {/* Feature 2: Text Left, Image Right */}
-        <div className="grid grid-cols-1 gap-y-12 md:grid-cols-12 md:gap-x-12 items-center">
-          <div className="md:col-span-5 flex flex-col justify-center space-y-6 order-last md:order-first">
-            <span className="font-mono text-xs uppercase tracking-widest text-accent underline">
-              02 — Visual Bliss
-            </span>
-            <h2 className="font-heading text-5xl font-medium leading-tight">
-              Designed to <br /> <span className="italic text-accent">Inspire</span>
+        <div className="grid md:grid-cols-12 gap-12 items-center">
+          <div className="md:col-span-5">
+            <h2 className="font-heading text-4xl">
+              Designed to <span className="italic text-accent">Inspire</span>
             </h2>
-            <p className="text-lg text-muted-foreground">
-              A strict atomic design system ensures consistency. Every component is
-              crafted with obsessive attention to detail.
-            </p>
           </div>
           <div className="md:col-span-7">
-            <motion.div
-              style={{ y: featureYReverse }}
-              className="relative aspect-[16/9] overflow-hidden rounded-sm bg-secondary"
-            >
+            <motion.div style={{ y: featureYReverse }} className="relative aspect-video">
               <Image
                 src="https://images.pexels.com/photos/4930236/pexels-photo-4930236.jpeg"
                 alt="Design"
                 fill
-                className="object-cover transition-transform duration-700"
+                className="object-cover"
               />
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
+      {/* FOOTER */}
       <footer className="border-t border-border bg-secondary/30 py-10">
         <div className="container flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-          {/* Left: Project Links */}
           <div className="flex flex-wrap gap-6 text-sm font-medium text-muted-foreground">
-            <Link href="/docs" className="hover:text-foreground transition-colors">
+            <Link href="/docs" className="hover:text-foreground">
               Documentation
             </Link>
-
             <Link
               href="https://github.com/AtharvRG/chameleon-docs"
               target="_blank"
-              className="hover:text-foreground transition-colors"
+              className="hover:text-foreground"
             >
               GitHub
             </Link>
-
-            <Link href="/terms" className="hover:text-foreground transition-colors">
-              Terms of Service
+            <Link href="/terms" className="hover:text-foreground">
+              Terms
             </Link>
-
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
-              Privacy Policy
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy
             </Link>
-
-            <Link
-              href="/contributing"
-              className="hover:text-foreground transition-colors"
-            >
+            <Link href="/contributing" className="hover:text-foreground">
               Contributing
             </Link>
           </div>
 
-          {/* Right: Social Icons */}
           <div className="flex items-center gap-6 text-muted-foreground text-lg">
             <Link
               href="https://github.com/AtharvRG/chameleon-docs"
               target="_blank"
               aria-label="GitHub"
-              className="hover:text-foreground transition-colors"
+              className="hover:text-foreground"
             >
               <FaGithub />
             </Link>
@@ -289,14 +216,13 @@ export default function LandingPageClient({ session }: { session: any }) {
               href="https://x.com/AGachchi"
               target="_blank"
               aria-label="X (Twitter)"
-              className="hover:text-foreground transition-colors"
+              className="hover:text-foreground"
             >
               <FaXTwitter />
             </Link>
           </div>
         </div>
 
-        {/* Bottom line */}
         <div className="container mt-6 text-center">
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Chameleon Docs. All rights reserved.

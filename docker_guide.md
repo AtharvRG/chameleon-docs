@@ -201,6 +201,11 @@ If `3000` or `27017` are occupied:
 - stop the conflicting process, or
 - change the host port mapping in `docker-compose.yml`
 
+If MongoDB is already running locally on `27017`, start compose on a different host port:
+```powershell
+$env:MONGO_PORT=27018; docker compose up --build
+```
+
 ### File watching is unreliable on Docker Desktop
 The dev stack sets `WATCHPACK_POLLING=true` to improve reliability on file shares.
 

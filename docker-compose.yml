@@ -5,7 +5,9 @@ services:
     restart: unless-stopped
     ports:
       # Expose for local tooling (MongoDB Compass, mongosh, etc.)
-      - "27017:27017"
+      # If 27017 is already taken on your machine, run with:
+      #   MONGO_PORT=27018 docker compose up --build
+      - "${MONGO_PORT:-27017}:27017"
     volumes:
       - mongo-data:/data/db
     healthcheck:

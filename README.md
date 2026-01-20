@@ -74,6 +74,29 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
 
 5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+---
+
+### Docker (Optional)
+
+This repo supports an optional Docker-based local development workflow to improve:
+- onboarding speed (one command start)
+- environment consistency across OSes
+- reproducibility and clean resets
+
+Start the dev stack:
+```bash
+docker compose up --build
+```
+
+App: http://localhost:3000
+
+Stop:
+```bash
+docker compose down
+```
+
+For a deeper walkthrough (dev vs prod-like, architecture, troubleshooting), see `docker_guide.md`.
+
 ## 📂 Project Structure
 
 ```bash

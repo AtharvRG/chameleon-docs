@@ -1,0 +1,51 @@
+# Production-like Compose stack (optional)
+#
+# This file is intentionally separate from `docker-compose.yml` so that:
+# - The default `docker compose up` remains dev-first (hot reload + bind mounts)
+# - Contributors can opt into a "closer to prod" stack for parity checks
+#
+# Usage:
+#   docker compose -f docker-compose.prod.yml up --build
+#
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+      args:
+        NODE_VERSION: "20"
+    init: true
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env.example
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongo:27017/chameleon-docs
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode >= 200 && r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mongo-data:

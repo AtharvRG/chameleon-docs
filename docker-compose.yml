@@ -47,8 +47,8 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      # Use Node (no curl) to verify the server responds.
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode >= 200 && r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
+      # Use curl to verify the server responds successfully.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10

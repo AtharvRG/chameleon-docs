@@ -28,8 +28,8 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      # Defaults for local dev. For real values, copy to `.env.local` and adjust.
-      - ./.env.example
+      # Local overrides: copy `.env.example` to `.env.local` and adjust for your environment.
+      - ./.env.local
     environment:
       # Ensure the app connects to the Mongo container by service name.
       MONGODB_URI: mongodb://mongo:27017/chameleon-docs

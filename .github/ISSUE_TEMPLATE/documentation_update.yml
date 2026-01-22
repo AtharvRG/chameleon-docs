@@ -1,0 +1,39 @@
+name: "📝 Documentation Improvement"
+description: "Suggest changes to existing docs or propose new documentation."
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Help us make Chameleon Docs better! 📖
+        Use this form to suggest improvements to our guides, README, or technical documentation.
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: "What kind of doc change is this?"
+      options:
+        - ✍️ New Guide/Tutorial
+        - 🛠 Technical API Update
+        - 📝 Content Correction (Typos/Grammar)
+        - 🎨 Visual/Styling Fix (Docs UI)
+    validations:
+      required: true
+  - type: textarea
+    id: current-issue
+    attributes:
+      label: "Current Documentation Issue"
+      placeholder: "What is missing or incorrect in the current docs?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-change
+    attributes:
+      label: "Proposed Changes"
+      placeholder: "Describe what you want to add or change."
+    validations:
+      required: true
+  - type: input
+    id: doc-link
+    attributes:
+      label: "Affected Page Link"
+      placeholder: "Link to the specific page or file (if applicable)"

@@ -1,0 +1,43 @@
+name: "🐛 Bug Report"
+description: "Report a glitch or unexpected behavior in Chameleon Docs."
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Help us improve Chameleon Docs! 🦎
+        Please provide as much detail as possible so we can reproduce the issue.
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe the bug"
+      placeholder: "A clear and concise description of what the bug is."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to Reproduce"
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. See error
+    validations:
+      required: true
+  - type: dropdown
+    id: browser
+    attributes:
+      label: "Browser"
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: node_version
+    attributes:
+      label: "Node.js Version"
+      placeholder: "e.g., v18.17.0"

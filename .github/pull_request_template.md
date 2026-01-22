@@ -1,26 +1,25 @@
 ## 📝 Description
-Briefly describe the changes introduced by this PR.
 
-**Closes Issue:** # (Link the issue here)
+## 🔗 Related Issue
+Closes #
 
-## 💡 Type of Change
-- [ ] 🚀 New Feature (AI logic, UI component)
+## 🛠️ Type of Change
+- [ ] ✨ New Feature
 - [ ] 🐛 Bug Fix
-- [ ] 💅 Styling/UI Update
-- [ ] 📜 Documentation Update
-- [ ] ⚙️ Refactor / Performance
+- [ ] 📝 Documentation Update
+- [ ] 🚀 Performance Optimization
+- [ ] 🎨 UI/UX Improvement
 
-## 🧪 How Has This Been Tested?
-Please describe the tests you ran to verify your changes.
-- [ ] Tested locally on `localhost:3000`
-- [ ] Verified Gemini AI response (if applicable)
-- [ ] Checked responsive design (Mobile/Desktop)
-
-## 📸 Screenshots (If applicable)
-*Add screenshots or a video/GIF of the changes.*
-
-## ✅ Checklist
+## ✅ Quality Checklist
 - [ ] My code follows the project's style guidelines.
-- [ ] I have performed a self-review of my own code.
-- [ ] I have commented my code, particularly in hard-to-understand areas.
-- [ ] My changes generate no new linting warnings.
+- [ ] I have performed a self-review of my code.
+- [ ] I have added comments to complex areas (especially AI/Server Action logic).
+- [ ] (If applicable) I have updated the documentation.
+- [ ] My changes generate no new console warnings.
+
+## 📸 Visuals (If applicable)
+| Before | After |
+|--------|-------|
+|        |       |
+
+## 💬 Additional Notes

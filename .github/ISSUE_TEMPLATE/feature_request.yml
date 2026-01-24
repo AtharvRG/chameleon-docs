@@ -1,0 +1,16 @@
+name: "✨ Feature Request"
+description: "Propose a new idea or improvement for the platform."
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: "What is the goal?"
+      placeholder: "What problem does this feature solve?"
+    validations:
+      required: true
+  - type: textarea
+    id: design_logic
+    attributes:
+      label: "Proposed UI/Logic"
+      placeholder: "How should this adapt to the Chameleon design system?"

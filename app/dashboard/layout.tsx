@@ -22,6 +22,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [showSignoutConfirm, setShowSignoutConfirm] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -96,7 +97,7 @@ export default function DashboardLayout({
         {/* Sign Out */}
         <div className="mt-auto border-t border-white/5 pt-4">
           <button
-            onClick={() => signOutAction()}
+            onClick={() => setShowSignoutConfirm(true)}
             className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-all hover:bg-red-500/10 hover:text-red-500"
           >
             <LogOut className="h-4 w-4" />
@@ -105,6 +106,31 @@ export default function DashboardLayout({
         </div>
       </aside>
 
+      {showSignoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-background text-foreground rounded-lg p-6 shadow-lg max-w-sm w-full">
+            <h2 className="text-lg font-semibold mb-4">Confirm Sign Out</h2>
+            <p className="mb-6">Are you sure you want to sign out?</p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 bg-muted rounded hover:bg-muted/80"
+                onClick={() => setShowSignoutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                onClick={() => {
+                  setShowSignoutConfirm(false);
+                  signOutAction();
+                }}
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Main Content */}
       <main className="flex-1 p-4 lg:pl-72 lg:p-8 overflow-y-auto">
         <div className="mx-auto max-w-7xl">{children}</div>

@@ -1,97 +1,53 @@
-# Contributing to Chameleon Docs
+# 🦎 Contributing to Chameleon Docs
 
-Thank you for your interest in contributing to Chameleon Docs! We welcome contributions from the community to help make this project better. This document outlines the guidelines and processes for contributing.
+First of all, thank you for helping us reimagine documentation! Whether you are fixing a bug, improving the glassmorphism UI, or optimizing the Gemini AI logic, your contributions are vital to making Chameleon Docs thrive for **ECWOC'26**.
 
-## Table of Contents
+---
 
-- [Code of Conduct](#code-of-conduct)
-- [How to Contribute](#how-to-contribute)
-- [Development Setup](#development-setup)
-- [Submitting Changes](#submitting-changes)
-- [Reporting Issues](#reporting-issues)
-- [Style Guidelines](#style-guidelines)
+## 🛠️ Tech Stack & Requirements
+To contribute effectively, ensure you are comfortable with:
+* **Framework:** Next.js 14+ (App Router & Server Actions)
+* **Styling:** Tailwind CSS, Framer Motion, and Lenis (for smooth scrolling)
+* **AI:** Google Generative AI SDK (Gemini)
+* **Database:** MongoDB (Mongoose)
 
-## Code of Conduct
+---
 
-This project adheres to a code of conduct to ensure a welcoming environment for all contributors. Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
+## 🚀 Getting Started
 
-## How to Contribute
+### 1. Branching Strategy
+We use specific prefixes to keep the history clean:
+* `feature/` : New UI or AI functionality (e.g., `feature/cmdk-logic`)
+* `bugfix/` : Fixing issues or styling glitches (e.g., `bugfix/auth-redirect`)
+* `docs/` : Updates to documentation or README.
+* `refactor/` : Improving code structure without changing features.
 
-There are many ways to contribute to Chameleon Docs:
+### 2. Local Setup
+1. **Fork** the repository and clone it.
+2. Run `npm install`.
+3. Create a `.env.local` file (refer to the README for required keys like `GOOGLE_API_KEY`).
+4. Run `npm run dev` to start the local server.
 
-- **Bug Reports**: Report bugs by opening an issue on GitHub.
-- **Feature Requests**: Suggest new features by opening an issue.
-- **Code Contributions**: Submit pull requests with fixes or enhancements.
-- **Documentation**: Improve documentation or add examples.
-- **Testing**: Help test the application and report issues.
+---
 
-## Development Setup
+## 🎨 Contribution Guidelines
 
-To set up a development environment:
+### Code Style
+* **TypeScript:** No `any` types. Define interfaces in the `types/` folder.
+* **UI Components:** Use the atomic design system. Small primitives go in `components/ui/`.
+* **Linting:** Run `npm run lint` before committing to ensure there are no errors.
 
-1. **Fork the repository** on GitHub.
+### Commit Messages
+Please use clear, descriptive commit messages:
+* `feat: add gemini-powered auto-tagging`
+* `fix: resolve hydration error in glassmorphism cards`
 
-2. **Clone your fork**:
-   ```bash
-   git clone https://github.com/your-username/chameleon-docs.git
-   cd chameleon-docs
-   ```
+---
 
-3. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+## 📥 Submitting a Pull Request
+1. Ensure your branch is up to date with `main`.
+2. Fill out the **Pull Request Template** completely.
+3. If you changed the UI, **screenshots or GIFs** are mandatory.
+4. Link the PR to an existing issue (e.g., `Closes #12`).
 
-4. **Set up environment variables**:
-   Create a `.env.local` file with the required variables (see README.md).
-
-5. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
-
-## Submitting Changes
-
-1. **Create a branch** for your changes:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **Make your changes** and ensure they follow our style guidelines.
-
-3. **Test your changes** thoroughly.
-
-4. **Commit your changes** with a clear, descriptive message:
-   ```bash
-   git commit -m "Add feature: brief description"
-   ```
-
-5. **Push to your fork**:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-6. **Open a Pull Request** on the main repository.
-
-## Reporting Issues
-
-When reporting issues:
-
-- Use a clear, descriptive title.
-- Provide steps to reproduce the issue.
-- Include relevant details like browser, OS, and error messages.
-- If possible, include screenshots or code snippets.
-
-## Style Guidelines
-
-- Follow the existing code style in the project.
-- Use TypeScript for type safety.
-- Write clear, concise commit messages.
-- Ensure code is well-documented.
-- Follow the project's naming conventions.
-
-## Questions?
-
-If you have questions about contributing, feel free to open an issue or contact the maintainers.
-
-Thank you for contributing to Chameleon Docs! 🚀
+Thank you for building with us! 🦎

@@ -1,3 +1,7 @@
+import dns from "dns";
+
+dns.setDefaultResultOrder("ipv4first");
+
 import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -30,8 +34,9 @@ export async function connectToDB() {
 
     if (!cached.promise) {
         const opts = {
-            bufferCommands: false,
-        };
+  bufferCommands: false,
+  family: 4, // 🔥 force IPv4 (fixes Windows SRV issues)
+};
 
         cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
             return mongoose;

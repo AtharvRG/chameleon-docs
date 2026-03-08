@@ -30,6 +30,9 @@ const PageSchema = new Schema<IPage>(
 // Compound index to ensure slugs are unique PER project
 PageSchema.index({ projectId: 1, slug: 1 }, { unique: true });
 
+// Text index for searching
+PageSchema.index({ title: "text", content: "text" });
+
 const Page: Model<IPage> =
     mongoose.models.Page || mongoose.model<IPage>("Page", PageSchema);
 

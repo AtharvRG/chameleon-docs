@@ -94,6 +94,67 @@ const config: Config = {
         "reveal-mask": "reveal-mask 1s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         marquee: "marquee 50s linear infinite",
       },
+      typography: ({ theme }: { theme: any }) => ({
+        DEFAULT: {
+          css: {
+            '--tw-prose-body': theme('colors.muted.foreground'),
+            '--tw-prose-headings': theme('colors.foreground'),
+            '--tw-prose-lead': theme('colors.muted.foreground'),
+            '--tw-prose-links': theme('colors.accent.DEFAULT'),
+            '--tw-prose-bold': theme('colors.foreground'),
+            '--tw-prose-counters': theme('colors.muted.foreground'),
+            '--tw-prose-bullets': theme('colors.muted.foreground'),
+            '--tw-prose-hr': theme('colors.border'),
+            '--tw-prose-quotes': theme('colors.foreground'),
+            '--tw-prose-quote-borders': theme('colors.accent.DEFAULT'),
+            '--tw-prose-captions': theme('colors.muted.foreground'),
+            '--tw-prose-code': theme('colors.accent.DEFAULT'),
+            '--tw-prose-pre-code': theme('colors.gray[300]'),
+            '--tw-prose-pre-bg': theme('colors.gray[900]'),
+            '--tw-prose-th-borders': theme('colors.border'),
+            '--tw-prose-td-borders': theme('colors.border'),
+            '--tw-prose-invert-body': theme('colors.muted.foreground'),
+            '--tw-prose-invert-headings': theme('colors.foreground'),
+            '--tw-prose-invert-lead': theme('colors.muted.foreground'),
+            '--tw-prose-invert-links': theme('colors.accent.DEFAULT'),
+            '--tw-prose-invert-bold': theme('colors.foreground'),
+            '--tw-prose-invert-counters': theme('colors.muted.foreground'),
+            '--tw-prose-invert-bullets': theme('colors.border'),
+            '--tw-prose-invert-hr': theme('colors.border'),
+            '--tw-prose-invert-quotes': theme('colors.foreground'),
+            '--tw-prose-invert-quote-borders': theme('colors.accent.DEFAULT'),
+            '--tw-prose-invert-captions': theme('colors.muted.foreground'),
+            '--tw-prose-invert-code': theme('colors.accent.DEFAULT'),
+            '--tw-prose-invert-pre-code': theme('colors.gray[300]'),
+            '--tw-prose-invert-pre-bg': '#282a36', // dracula bg
+            '--tw-prose-invert-th-borders': theme('colors.border'),
+            '--tw-prose-invert-td-borders': theme('colors.border'),
+            p: {
+              lineHeight: '1.75',
+              fontSize: '1.125rem', // text-lg
+            },
+            'h2, h3, h4': {
+              scrollMarginTop: theme('spacing.20'),
+            },
+            table: {
+              fontSize: theme('fontSize.sm'),
+              width: '100%',
+              borderCollapse: 'collapse',
+            },
+            'thead th': {
+              backgroundColor: theme('colors.muted.DEFAULT'),
+              padding: theme('spacing.3'),
+              fontWeight: '600',
+            },
+            'tbody tr:nth-child(even)': {
+              backgroundColor: theme('colors.muted.DEFAULT / 0.5')
+            },
+            'tbody td': {
+              padding: theme('spacing.3'),
+            }
+          },
+        },
+      }),
     },
   },
   plugins: [require("@tailwindcss/typography"), require("tailwindcss-animate")],

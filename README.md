@@ -1,14 +1,38 @@
 # Chameleon Docs 🦎
 
-> **Documentation Reimagined.** Craft living knowledge bases that adapt to your team. Beautiful by default.
+> **Documentation, Reimagined.**  
+> A flexible, open-source documentation platform that adapts to your team’s workflow. Clean, fast, and beautiful by default.
 
 ![Project Status](https://img.shields.io/badge/Status-Beta-blue)
+![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
+---
+
+## ✨ Why Chameleon Docs?
+
+Chameleon Docs is built to make documentation feel alive — not static.  
+It’s designed for teams who want clarity, flexibility, and an open space for collaboration.
+
+### Key Goals
+- 📚 Simple, readable documentation structure  
+- 🧩 Easy to customize and extend  
+- 🤝 Beginner-friendly open-source project  
+- 🚀 Lightweight and framework-agnostic
+
+---
+
+
+
+---
 
 ## ✨ Overview
 
-**Chameleon Docs** is a next-generation documentation platform designed to be visually comfortable and highly intelligent. It moves away from static, boring wikis to create a dynamic, adaptive environment for your team's knowledge.
+**Chameleon Docs** is a next-generation documentation platform leveraging **Next.js React Server Components (RSC)** and **Google Gemini AI**. It moves away from static, boring wikis to create a dynamic environment where the interface "morphs" based on content context and user intent.
 
-Built with **Next.js** and **React Server Components**, it prioritizes zero-latency performance while delivering a premium user experience with smooth animations and a refined design system.
+Built for **ECWOC'26**, it prioritizes zero-latency performance while delivering a premium user experience through glassmorphism and micro-interactions.
+
+---
 
 ## 🚀 Key Features
 
@@ -18,6 +42,8 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
 - **🦎 Adaptive Interface:** A "Chameleon" theme that adapts to user preferences, featuring a command menu (`cmdk`) for keyboard-first navigation.
 - **🔐 Secure Authentication:** Robust auth system using **NextAuth.js** and **MongoDB**.
 - **🌊 Smooth Experience:** Enhanced scrolling with **Lenis** and fluid animations with **Framer Motion**.
+
+---
 
 ## 🛠️ Tech Stack
 
@@ -30,6 +56,50 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
 - **AI:** [PuterJS](https://puter.com/) (client-side, uses `google/gemini-3-flash-preview`)
 - **UI Components:** [Radix UI](https://www.radix-ui.com/), [Lucide React](https://lucide.dev/)
 - **Markdown:** `react-markdown`, `remark-gfm`, `react-syntax-highlighter`
+
+---
+
+## 🧠 Architecture
+To empower our contributors, we’ve visualized the internal "magic" that keeps the platform performant while handling complex AI logic.
+
+### 1. RSC vs. Client Boundary
+We use a **"Server-First"** approach. Data fetching and AI orchestration happen on the server to keep the client-side bundle lean and fast.
+```mermaid
+graph TD
+    subgraph Server_Boundary ["Server (Node.js/RSC)"]
+        A[app/page.tsx] --> B[Mongoose Models]
+        A --> C[Server Actions]
+        C --> D[Google Gemini SDK]
+    end
+
+    subgraph Client_Boundary ["Client (Browser)"]
+        E[Framer Motion Animations]
+        F[Radix UI Primitives]
+        G[Lenis Smooth Scroll]
+    end
+
+    C -- "JSON Stream" --> E
+    B -- "Hydrated Props" --> F
+```
+
+### 2. Adaptive AI Content Flow
+This flow shows how the Google Generative AI SDK integrates with Next.js Server Actions to process and organize documentation:
+```mermaid
+sequenceDiagram
+    participant U as User (Client)
+    participant SA as Server Action
+    participant G as Gemini AI
+    participant DB as MongoDB
+
+    U->>SA: Submit Content/Query
+    SA->>G: Context + System Prompt
+    Note over G: AI processes structure & tags
+    G-->>SA: Structured JSON Response
+    SA->>DB: Save to Mongoose Model
+    SA-->>U: Refresh UI via revalidatePath()
+```
+
+---
 
 ## 🏁 Getting Started
 
@@ -52,14 +122,12 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
     ```bash
     npm install
     ```
-
-3.  **Set up environment variables:**
+#### 3.  **Set up environment variables:**
     Create a `.env.local` file in the root directory and add the following:
 
     ```env
     # Database
     MONGODB_URI=your_mongodb_connection_string
-
     # Authentication
     AUTH_SECRET=your_nextauth_secret
 
@@ -74,8 +142,32 @@ Built with **Next.js** and **React Server Components**, it prioritizes zero-late
     ```bash
     npm run dev
     ```
+#### 5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-5.  Open [http://localhost:3000](http://localhost:3000) in your browser.
+---
+
+---
+
+### Docker (Optional)
+
+This repo supports an optional Docker-based local development workflow to improve:
+- onboarding speed (one command start)
+- environment consistency across OSes
+- reproducibility and clean resets
+
+Start the dev stack:
+```bash
+docker compose up --build
+```
+
+App: http://localhost:3000
+
+Stop:
+```bash
+docker compose down
+```
+
+For a deeper walkthrough (dev vs prod-like, architecture, troubleshooting), see `docker_guide.md`.
 
 ## 📂 Project Structure
 
@@ -93,8 +185,9 @@ chameleon-docs/
 └── types/          # TypeScript type definitions
 ```
 
-## 🤝 Contributing
+---
 
+## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1.  Fork the project
@@ -102,6 +195,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4.  Push to the branch (`git push origin feature/AmazingFeature`)
 5.  Open a Pull Request
+
+---
 
 ## 📄 License
 

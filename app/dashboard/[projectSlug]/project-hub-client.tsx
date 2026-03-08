@@ -425,37 +425,76 @@ export function ProjectHubClient({ project, pages, analytics }: any) {
                                                         <Badge variant={page.status === "Published" ? "success" : "secondary"}>
                                                             {page.status}
                                                         </Badge>
-
+                                                                                                        
                                                         <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="icon">
-                                                                    <MoreVertical className="h-4 w-4" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <Link href={`/dashboard/${project.slug}/editor?page=${page.slug}`}>
-                                                                    <DropdownMenuItem>
-                                                                        <Edit3 className="mr-2 h-4 w-4" /> Edit Content
-                                                                    </DropdownMenuItem>
-                                                                </Link>
-                                                                <DropdownMenuItem onClick={() => openRenameModal(page)}>
-                                                                    <Pencil className="mr-2 h-4 w-4" /> Rename
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => openSlugModal(page)}>
-                                                                    <Link2 className="mr-2 h-4 w-4" /> Edit Slug
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem onClick={() => handlePublishToggle(page._id, page.status === "Published")}>
-                                                                    <Eye className="mr-2 h-4 w-4" />
-                                                                    {page.status === "Published" ? "Unpublish" : "Publish"}
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuSeparator />
-                                                                <DropdownMenuItem 
-                                                                    onClick={() => openDeleteModal(page)}
-                                                                    className="text-red-500 focus:text-red-500"
-                                                                >
-                                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon">
+                                                            <MoreVertical className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+
+                                                        <DropdownMenuContent
+                                                            align="end"
+                                                            className="bg-background text-foreground shadow-md border border-border rounded-md"
+                                                        >
+                                                            <Link href={`/dashboard/${project.slug}/editor?page=${page.slug}`}>
+                                                            <DropdownMenuItem className="
+                                                            cursor-pointer
+                                                            text-foreground
+                                                            focus:bg-muted
+                                                            focus:text-foreground
+                                                            hover:bg-muted
+                                                            hover:text-foreground
+                                                        ">
+                                                                <Edit3 className="mr-2 h-4 w-4" /> Edit Content
+                                                            </DropdownMenuItem>
+                                                            </Link>
+                                                            <DropdownMenuItem   className="
+                                                            cursor-pointer
+                                                            text-foreground
+                                                            focus:bg-muted
+                                                            focus:text-foreground
+                                                            hover:bg-muted
+                                                            hover:text-foreground
+                                                        " onClick={() => openRenameModal(page)}>
+                                                            <Pencil className="mr-2 h-4 w-4" /> Rename
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem   className="
+                                                            cursor-pointer
+                                                            text-foreground
+                                                            focus:bg-muted
+                                                            focus:text-foreground
+                                                            hover:bg-muted
+                                                            hover:text-foreground
+                                                        " onClick={() => openSlugModal(page)}>
+                                                            <Link2 className="mr-2 h-4 w-4" /> Edit Slug
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem   className="
+                                                            cursor-pointer
+                                                            text-foreground
+                                                            focus:bg-muted
+                                                            focus:text-foreground
+                                                            hover:bg-muted
+                                                            hover:text-foreground
+                                                        " onClick={() => handlePublishToggle(page._id, page.status === "Published")}>
+                                                            <Eye className="mr-2 h-4 w-4" />
+                                                            {page.status === "Published" ? "Unpublish" : "Publish"}
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem 
+                                                            onClick={() => openDeleteModal(page)}
+                                                                className="
+                                                            cursor-pointer
+                                                            text-red-500
+                                                            hover:bg-red-500/10
+                                                            hover:text-red-600
+                                                            focus:bg-red-500/10
+                                                            focus:text-red-600
+                                                        "
+                                                            >
+                                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </div>
                                                 </div>

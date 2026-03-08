@@ -1,0 +1,59 @@
+services:
+  mongo:
+    # MongoDB for local development.
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      # Expose for local tooling (MongoDB Compass, mongosh, etc.)
+      # If 27017 is already taken on your machine, run with:
+      #   MONGO_PORT=27018 docker compose up --build
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    # Next.js app (Chameleon Docs).
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+      args:
+        NODE_VERSION: "20"
+    init: true
+    ports:
+      - "3000:3000"
+    env_file:
+      # Local overrides: copy `.env.example` to `.env.local` and adjust for your environment.
+      - ./.env.local
+    environment:
+      # Ensure the app connects to the Mongo container by service name.
+      MONGODB_URI: mongodb://mongo:27017/chameleon-docs
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      # Improve file watching reliability on Docker Desktop file shares.
+      WATCHPACK_POLLING: "true"
+    volumes:
+      # Bind mount source for hot reload.
+      - ./:/app
+      # Keep node_modules inside Docker to avoid host OS conflicts.
+      - web-node-modules:/app/node_modules
+      # Keep Next.js cache inside Docker for faster incremental builds.
+      - web-next-cache:/app/.next
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      # Use curl to verify the server responds successfully.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mongo-data:
+  web-node-modules:
+  web-next-cache:

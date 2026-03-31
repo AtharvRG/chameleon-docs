@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     Settings, FileText, Plus, Edit3, ArrowUpRight,
     Palette, Check, Globe, Lock, MoreVertical, Folder, Eye,
-    Pencil, Trash2, Link2, X, AlertTriangle, Download, Upload
+    Pencil, Trash2, Link2, X, AlertTriangle, Download, Upload, Sparkles
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -88,6 +88,7 @@ export function ProjectHubClient({ project, pages, analytics }: any) {
     const [font, setFont] = useState(project.theme?.font || "Inter");
     const [isPublic, setIsPublic] = useState(project.isPublic || false);
     const [emoji, setEmoji] = useState(project.emoji || "📚");
+    const [showInShowcase, setShowInShowcase] = useState(project.showInShowcase !== false);
     const [isSavingSettings, setIsSavingSettings] = useState(false);
 
     // Page Modal states
@@ -131,7 +132,7 @@ export function ProjectHubClient({ project, pages, analytics }: any) {
 
     const handleSaveSettings = async () => {
         setIsSavingSettings(true);
-        await updateProjectSettings(project.slug, { color, font, isPublic, emoji });
+        await updateProjectSettings(project.slug, { color, font, isPublic, emoji, showInShowcase });
         setIsSavingSettings(false);
         router.refresh();
     };
@@ -555,6 +556,26 @@ export function ProjectHubClient({ project, pages, analytics }: any) {
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Showcase Toggle - only visible when public */}
+                                            {isPublic && (
+                                                <div className="space-y-3 pt-4 border-t border-white/10">
+                                                    <div className="flex items-center justify-between">
+                                                        <div>
+                                                            <label className="text-sm font-medium flex items-center gap-2">
+                                                                <Sparkles className="h-4 w-4 text-purple-400" />
+                                                                Landing Page Showcase
+                                                            </label>
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                {showInShowcase ? "This project is featured on the homepage." : "This project is hidden from the homepage showcase."}
+                                                            </p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <SimpleSwitch checked={showInShowcase} className={showInShowcase ? 'bg-purple-500' : undefined} onCheckedChange={setShowInShowcase} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="rounded-xl border border-white/10 bg-black/20 p-6 relative overflow-hidden">

@@ -92,7 +92,7 @@ export async function getProjectDetails(slug: string) {
 // 4. Update Project Settings (Theme & Visibility)
 export async function updateProjectSettings(
     projectSlug: string,
-    settings: { color: string; font: string; isPublic: boolean; emoji?: string }
+    settings: { color: string; font: string; isPublic: boolean; emoji?: string; showInShowcase?: boolean }
 ) {
     try {
         const session = await auth();
@@ -108,9 +108,13 @@ export async function updateProjectSettings(
         project.theme.font = settings.font;
         project.isPublic = settings.isPublic;
         
-        // Update emoji if provided (empty string means no emoji)
         if (settings.emoji !== undefined) {
             project.emoji = settings.emoji;
+        }
+
+        // Update showcase visibility
+        if (settings.showInShowcase !== undefined) {
+            project.showInShowcase = settings.showInShowcase;
         }
 
         await project.save();

@@ -3,13 +3,103 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowUpRight, Github, Star, Anchor } from "lucide-react";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { ArrowUpRight, Github, Star, FileText, ChevronRight } from "lucide-react";
 import MagneticButton from "@/components/ui/magnetic-button";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import type { ShowcaseProject } from "@/actions/showcase-actions";
 
-export default function LandingPageClient({ session }: { session: any }) {
+interface LandingPageClientProps {
+    session: any;
+    publicProjects: ShowcaseProject[];
+}
+
+function ShowcaseCard({ project, index }: { project: ShowcaseProject; index: number }) {
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, margin: "-50px" });
+
+    // Format relative time
+    const timeAgo = (dateStr: string) => {
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        if (days === 0) return "Today";
+        if (days === 1) return "Yesterday";
+        if (days < 30) return `${days}d ago`;
+        const months = Math.floor(days / 30);
+        return `${months}mo ago`;
+    };
+
+    return (
+        <motion.div
+            ref={ref}
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+            transition={{
+                duration: 0.7,
+                delay: index * 0.1,
+                ease: [0.16, 1, 0.3, 1],
+            }}
+        >
+            <Link href={`/p/${project.slug}`}>
+                <div className="group relative overflow-hidden rounded-sm border border-border bg-card/50 backdrop-blur-sm transition-all duration-500 hover:border-accent/30 hover:bg-card/80 hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1">
+                    {/* Top accent bar */}
+                    <div
+                        className="h-1 w-full transition-all duration-500 group-hover:h-1.5"
+                        style={{ backgroundColor: project.themeColor }}
+                    />
+
+                    <div className="p-6 space-y-4">
+                        {/* Header */}
+                        <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="flex h-12 w-12 items-center justify-center rounded-lg text-2xl border border-border/50 transition-transform duration-300 group-hover:scale-110"
+                                    style={{
+                                        background: `linear-gradient(135deg, ${project.themeColor}15, ${project.themeColor}05)`,
+                                    }}
+                                >
+                                    {project.emoji}
+                                </div>
+                                <div>
+                                    <h3 className="font-heading text-xl font-semibold tracking-tight group-hover:text-accent transition-colors duration-300">
+                                        {project.name}
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground font-mono">
+                                        /{project.slug}
+                                    </p>
+                                </div>
+                            </div>
+                            <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 -translate-y-1 translate-x-1 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0" />
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                            {project.description}
+                        </p>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1.5">
+                                    <FileText className="h-3 w-3" />
+                                    {project.pageCount} {project.pageCount === 1 ? "page" : "pages"}
+                                </span>
+                                <span>Updated {timeAgo(project.updatedAt)}</span>
+                            </div>
+                            <span className="text-xs font-medium text-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-1">
+                                Read
+                                <ChevronRight className="h-3 w-3" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        </motion.div>
+    );
+}
+
+export default function LandingPageClient({ session, publicProjects }: LandingPageClientProps) {
     const containerRef = useRef(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -27,6 +117,10 @@ export default function LandingPageClient({ session }: { session: any }) {
 
     const featureY = useTransform(featureScroll, [0, 1], ["0%", "-10%"]);
     const featureYReverse = useTransform(featureScroll, [0, 1], ["0%", "10%"]);
+
+    // Showcase section ref
+    const showcaseRef = useRef(null);
+    const showcaseInView = useInView(showcaseRef, { once: true, margin: "-100px" });
 
     return (
         <div ref={containerRef} className="relative min-h-[200vh] bg-background text-foreground selection:bg-accent/30 selection:text-accent-foreground">
@@ -93,7 +187,7 @@ export default function LandingPageClient({ session }: { session: any }) {
                                 initial={{ y: "100%" }}
                                 animate={{ y: 0 }}
                                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                                className="block overflow-hidden italic text-accent pb-9" // Reduced padding-bottom
+                                className="block overflow-hidden italic text-accent pb-9"
                             >
                                 <span className="block">Reimagined</span>
                             </motion.span>
@@ -149,6 +243,64 @@ export default function LandingPageClient({ session }: { session: any }) {
                     ))}
                 </div>
             </div>
+
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {/* SHOWCASE SECTION — Public Docs from the Community              */}
+            {/* ═══════════════════════════════════════════════════════════════ */}
+            {publicProjects.length > 0 && (
+                <section ref={showcaseRef} className="relative z-20 py-24 md:py-32 overflow-hidden">
+                    {/* Subtle background decoration */}
+                    <div className="absolute inset-0 pointer-events-none">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-accent/5 rounded-full blur-[120px]" />
+                    </div>
+
+                    <div className="container relative">
+                        {/* Section Header */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={showcaseInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-center mb-16 space-y-4"
+                        >
+                            <span className="font-mono text-xs uppercase tracking-[0.3em] text-accent">
+                                Explore
+                            </span>
+                            <h2 className="font-heading text-5xl md:text-6xl font-medium tracking-tight">
+                                Community <span className="italic text-accent">Docs</span>
+                            </h2>
+                            <p className="text-lg text-muted-foreground max-w-lg mx-auto">
+                                Discover live documentation projects built by the Chameleon community.
+                            </p>
+                        </motion.div>
+
+                        {/* Project Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {publicProjects.map((project, index) => (
+                                <ShowcaseCard
+                                    key={project.slug}
+                                    project={project}
+                                    index={index}
+                                />
+                            ))}
+                        </div>
+
+                        {/* CTA */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={showcaseInView ? { opacity: 1 } : { opacity: 0 }}
+                            transition={{ duration: 0.8, delay: 0.6 }}
+                            className="mt-16 text-center"
+                        >
+                            <Link href={session ? "/dashboard" : "/signup"}>
+                                <Button variant="outline" size="lg" className="group rounded-full px-8 border-accent/20 hover:border-accent/50 hover:bg-accent/5 transition-all">
+                                    Create Your Own Documentation
+                                    <ArrowUpRight className="ml-2 h-4 w-4 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
+                                </Button>
+                            </Link>
+                        </motion.div>
+                    </div>
+                </section>
+            )}
 
             {/* Feature Grid (Magazine Layout) */}
             <section ref={featureRef} className="container py-32 space-y-32">

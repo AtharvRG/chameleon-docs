@@ -6,6 +6,7 @@ export interface IProject extends Document {
     description?: string;
     ownerEmail: string;
     isPublic: boolean;
+    showInShowcase: boolean;
     emoji?: string;
     theme: {
         color: string;
@@ -26,6 +27,7 @@ const ProjectSchema = new Schema<IProject>(
         description: { type: String },
         ownerEmail: { type: String, required: true, index: true },
         isPublic: { type: Boolean, default: false },
+        showInShowcase: { type: Boolean, default: true },
         emoji: { 
             type: String, 
             default: () => DEFAULT_EMOJIS[Math.floor(Math.random() * DEFAULT_EMOJIS.length)]

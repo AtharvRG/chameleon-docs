@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Cormorant_Garamond, Plus_Jakarta_Sans, Space_Grotesk, Manrope, Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AccentProvider } from "@/components/accent-provider";
@@ -62,8 +61,6 @@ export default function RootLayout({
           inter.variable
         )}
       >
-        {/* PuterJS for AI functionality */}
-        <Script src="https://js.puter.com/v2/" strategy="beforeInteractive" />
         <SmoothScroll />
         <ThemeProvider
           attribute="class"

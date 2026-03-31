@@ -1,68 +1,19 @@
 "use client";
 
 /**
- * Hook for using PuterJS AI chat functionality
- * Uses model: google/gemini-3-flash-preview
+ * Hook for using Cerebras AI via the /api/reimagine endpoint
+ * Replaces the old PuterJS client-side AI with server-side Cerebras streaming
  */
 
 import { useState, useCallback, useRef } from "react";
 
-// Simplification level prompts - same as server-side but now client-side
-const SIMPLIFICATION_PROMPTS: Record<string, string> = {
-    technical: `
-You are a senior principal engineer.
-Rewrite the following documentation to be highly technical and rigorous.
-Focus on precise terminology, implementation specifics, and edge cases.
-Maintain professional tone. No analogies or simplified explanations.
-Keep the formatting (Markdown) clean.
-Only return the modified text, no explanations.
-`,
-    standard: `
-You are a documentation editor.
-Make minimal rephrasing to the following documentation for improved clarity.
-Preserve the original meaning and technical accuracy.
-Only fix grammar issues or slightly awkward phrasing.
-Maintain professional tone.
-Keep the formatting (Markdown) clean.
-Only return the modified text, no explanations.
-`,
-    simplified: `
-You are a technical writer.
-Rewrite the following documentation with clearer, more accessible language.
-Reduce jargon where possible without losing accuracy.
-Keep explanations direct and professional.
-Maintain the same information depth but improve readability.
-Keep the formatting (Markdown) clean.
-Only return the modified text, no explanations.
-`,
-    beginner: `
-You are a technical educator.
-Rewrite the following documentation for someone with basic technical knowledge.
-Explain concepts clearly without assuming prior expertise.
-Break down complex ideas into simpler components.
-Maintain a professional and direct tone.
-Keep the formatting (Markdown) clean.
-Only return the modified text, no explanations.
-`,
-    noob: `
-You are a patient technical educator writing for complete beginners.
-Rewrite the following documentation to be extremely accessible.
-Assume no prior technical knowledge.
-Use simple language and explain every concept from first principles.
-Break complex ideas into small, digestible steps.
-Maintain a professional and clear tone.
-Keep the formatting (Markdown) clean.
-Only return the modified text, no explanations.
-`,
-};
-
-export interface UsePuterAIOptions {
+export interface UseCerebrasAIOptions {
     onStreamUpdate?: (partialContent: string) => void;
     onComplete?: (finalContent: string) => void;
     onError?: (error: Error) => void;
 }
 
-export interface UsePuterAIReturn {
+export interface UseCerebrasAIReturn {
     isLoading: boolean;
     error: Error | null;
     reimagine: (content: string, simplificationLevel: string) => Promise<string>;
@@ -70,82 +21,75 @@ export interface UsePuterAIReturn {
     abort: () => void;
 }
 
-export function usePuterAI(options: UsePuterAIOptions = {}): UsePuterAIReturn {
+export function useCerebrasAI(options: UseCerebrasAIOptions = {}): UseCerebrasAIReturn {
     const { onStreamUpdate, onComplete, onError } = options;
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<Error | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    const buildPrompt = useCallback((content: string, systemInstruction: string): string => {
-        return `${systemInstruction}\n\n---\n\nText to modify:\n${content}`;
-    }, []);
-
-    const callPuterAI = useCallback(async (prompt: string): Promise<string> => {
-        // Check if puter is available
-        if (typeof window === "undefined" || !window.puter) {
-            throw new Error("PuterJS is not loaded. Please refresh the page.");
-        }
-
+    const callAPI = useCallback(async (body: Record<string, string>): Promise<string> => {
         setIsLoading(true);
         setError(null);
 
+        // Abort any previous request
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         try {
-            // Only sign in if not already authenticated (prevents popup on every call)
-            if (!window.puter.auth.isSignedIn()) {
-                await window.puter.auth.signIn({ attempt_temp_user_creation: true });
-            }
-            
-            // Use streaming for better UX
-            const response = await window.puter.ai.chat(prompt, {
-                model: "google/gemini-3-flash-preview",
-                stream: true,
+            const response = await fetch("/api/reimagine", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+                signal: controller.signal,
             });
 
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            const reader = response.body?.getReader();
+            if (!reader) {
+                throw new Error("No response body");
+            }
+
+            const decoder = new TextDecoder();
             let fullContent = "";
 
-            // Handle streaming response
-            // PuterJS streaming returns an async iterator
-            if (Symbol.asyncIterator in (response as object)) {
-                for await (const chunk of response as AsyncIterable<string>) {
-                    fullContent += chunk;
-                    onStreamUpdate?.(fullContent);
-                }
-            } else {
-                // Non-streaming fallback
-                const nonStreamResponse = response as { message: { content: string } };
-                fullContent = nonStreamResponse.message?.content || "";
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                fullContent += chunk;
+                onStreamUpdate?.(fullContent);
             }
 
             onComplete?.(fullContent);
             return fullContent;
         } catch (err) {
+            if ((err as Error).name === "AbortError") {
+                throw err;
+            }
             const error = err instanceof Error ? err : new Error("AI request failed");
             setError(error);
             onError?.(error);
             throw error;
         } finally {
             setIsLoading(false);
+            abortControllerRef.current = null;
         }
     }, [onStreamUpdate, onComplete, onError]);
 
     const reimagine = useCallback(async (content: string, simplificationLevel: string): Promise<string> => {
-        const systemInstruction = SIMPLIFICATION_PROMPTS[simplificationLevel] || SIMPLIFICATION_PROMPTS.standard;
-        const prompt = buildPrompt(content, systemInstruction);
-        return callPuterAI(prompt);
-    }, [buildPrompt, callPuterAI]);
+        return callAPI({ content, simplificationLevel });
+    }, [callAPI]);
 
     const reimagineCustom = useCallback(async (content: string, customPrompt: string): Promise<string> => {
-        const systemInstruction = `
-You are an expert editor and writing assistant.
-Apply the following instruction to the given text.
-Keep the same general format (Markdown if present).
-Only return the modified text, no explanations or extra content.
-
-Instruction: ${customPrompt}
-`;
-        const prompt = buildPrompt(content, systemInstruction);
-        return callPuterAI(prompt);
-    }, [buildPrompt, callPuterAI]);
+        return callAPI({ content, mode: "custom", prompt: customPrompt });
+    }, [callAPI]);
 
     const abort = useCallback(() => {
         if (abortControllerRef.current) {
@@ -162,3 +106,8 @@ Instruction: ${customPrompt}
         abort,
     };
 }
+
+// Backward-compatible alias
+export const usePuterAI = useCerebrasAI;
+export type UsePuterAIOptions = UseCerebrasAIOptions;
+export type UsePuterAIReturn = UseCerebrasAIReturn;

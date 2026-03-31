@@ -1,14 +1,13 @@
-/**
- * @deprecated This API route is deprecated. AI reimagination now uses PuterJS client-side.
- * Kept for backwards compatibility. All new code should use the usePuterAI hook.
- * @see hooks/use-puter-ai.ts
- */
-import { google } from "@ai-sdk/google";
+import { createCerebras } from "@ai-sdk/cerebras";
 import { streamText } from "ai";
+
+const cerebras = createCerebras({
+    apiKey: process.env.CEREBRAS_KEY,
+});
 
 export const runtime = "edge";
 
-// Simplification level prompts - serious, professional, no jokes or puns
+// Simplification level prompts
 const SIMPLIFICATION_PROMPTS: Record<string, string> = {
     technical: `
 You are a senior principal engineer.
@@ -65,7 +64,6 @@ export async function POST(req: Request) {
         let systemInstruction = "";
         
         if (mode === "custom" && customPrompt) {
-            // Custom AI edit with user's prompt
             systemInstruction = `
 You are an expert editor and writing assistant.
 Apply the following instruction to the given text.
@@ -75,21 +73,18 @@ Only return the modified text, no explanations or extra content.
 Instruction: ${customPrompt}
 `;
         } else if (simplificationLevel && SIMPLIFICATION_PROMPTS[simplificationLevel]) {
-            // Use the 5-level simplification system
             systemInstruction = SIMPLIFICATION_PROMPTS[simplificationLevel];
         } else if (mode === "simple") {
-            // Fallback to old simple mode
             systemInstruction = SIMPLIFICATION_PROMPTS.simplified;
         } else {
-            // Fallback to technical mode
             systemInstruction = SIMPLIFICATION_PROMPTS.technical;
         }
 
         const fullPrompt = `${systemInstruction}\n\n---\n\nText to modify:\n${content}`;
 
-        // Use the AI SDK Core API with Gemini Flash for speed
+        // Use Cerebras for fast inference
         const result = await streamText({
-            model: google("gemini-2.5-flash"),
+            model: cerebras("qwen-3-235b-a22b-instruct-2507"),
             prompt: fullPrompt,
         });
 
@@ -97,7 +92,7 @@ Instruction: ${customPrompt}
         return result.toTextStreamResponse();
 
     } catch (error) {
-        console.error("Gemini API Error:", error);
+        console.error("Cerebras API Error:", error);
         return new Response(JSON.stringify({ error: "Failed to process content" }), {
             status: 500,
             headers: { "Content-Type": "application/json" }

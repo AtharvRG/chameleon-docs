@@ -3,9 +3,12 @@
 /**
  * Hook for using Cerebras AI via the /api/reimagine endpoint
  * Replaces the old PuterJS client-side AI with server-side Cerebras streaming
+ * 
+ * Uses useRef for internal state to avoid triggering parent re-renders
+ * during streaming — the parent manages its own UI state.
  */
 
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 export interface UseCerebrasAIOptions {
     onStreamUpdate?: (partialContent: string) => void;
@@ -14,8 +17,8 @@ export interface UseCerebrasAIOptions {
 }
 
 export interface UseCerebrasAIReturn {
-    isLoading: boolean;
-    error: Error | null;
+    isLoading: React.RefObject<boolean>;
+    error: React.RefObject<Error | null>;
     reimagine: (content: string, simplificationLevel: string) => Promise<string>;
     reimagineCustom: (content: string, customPrompt: string) => Promise<string>;
     abort: () => void;
@@ -23,13 +26,13 @@ export interface UseCerebrasAIReturn {
 
 export function useCerebrasAI(options: UseCerebrasAIOptions = {}): UseCerebrasAIReturn {
     const { onStreamUpdate, onComplete, onError } = options;
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<Error | null>(null);
+    const isLoading = useRef(false);
+    const error = useRef<Error | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
     const callAPI = useCallback(async (body: Record<string, string>): Promise<string> => {
-        setIsLoading(true);
-        setError(null);
+        isLoading.current = true;
+        error.current = null;
 
         // Abort any previous request
         if (abortControllerRef.current) {
@@ -73,12 +76,12 @@ export function useCerebrasAI(options: UseCerebrasAIOptions = {}): UseCerebrasAI
             if ((err as Error).name === "AbortError") {
                 throw err;
             }
-            const error = err instanceof Error ? err : new Error("AI request failed");
-            setError(error);
-            onError?.(error);
-            throw error;
+            const e = err instanceof Error ? err : new Error("AI request failed");
+            error.current = e;
+            onError?.(e);
+            throw e;
         } finally {
-            setIsLoading(false);
+            isLoading.current = false;
             abortControllerRef.current = null;
         }
     }, [onStreamUpdate, onComplete, onError]);

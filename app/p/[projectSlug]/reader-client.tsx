@@ -161,22 +161,26 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
         setWavePhase("fade-out"); // Start fade out
 
         try {
-            // Use PuterJS for AI reimagination (client-side)
+            // Use Cerebras AI for reimagination (server-side)
             const newContent = await puterReimagine(activePage.content, mode);
 
-            // Store content and swap - content is hidden because we're in "loading" phase
-            setStoredReimaginedContent(newContent);
+            // Store in localStorage first (no re-render)
             localStorage.setItem(`reimagined-${project.slug}-${activePage.slug}`, newContent);
+
+            // Batch all content state updates together, then trigger fade-in
+            // React batches these into a single render, so the content swaps
+            // while the wave transition still has contentVisible=false
+            setStoredReimaginedContent(newContent);
             setViewMode("reimagined");
-            
-            // Now fade in the new content
             setWavePhase("fade-in");
 
-        } catch (error) {
-            console.error("PuterJS AI Error:", error);
-            setWavePhase("idle");
+        } catch (error: any) {
+            console.error("Cerebras AI Error:", error);
+            // Handle error state gracefully rather than snapping
+            setWavePhase("fade-in");
             setIsReimagining(false);
             setShowLoader(false);
+            alert(`Reimagination failed: ${error?.message || 'Unknown error'}. Please try again.`);
         }
     };
 
@@ -335,6 +339,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                         {/* Toggle Button (Original <-> Reimagined) */}
                         {storedReimaginedContent && !isReimagining ? (
                             <Button 
+                                type="button"
                                 variant="outline" 
                                 size="sm" 
                                 onClick={toggleView}
@@ -377,6 +382,7 @@ export function ReaderClient({ project, pages, activePage }: ReaderClientProps) 
                             <div className="w-px h-4 bg-border mx-1" />
 
                             <Button 
+                                type="button"
                                 size="sm"
                                 onClick={() => handleReimagine()}
                                 disabled={isReimagining}

@@ -5,7 +5,7 @@ const cerebras = createCerebras({
     apiKey: process.env.CEREBRAS_KEY,
 });
 
-export const runtime = "edge";
+// export const runtime = "edge";
 
 // Simplification level prompts
 const SIMPLIFICATION_PROMPTS: Record<string, string> = {
@@ -91,9 +91,9 @@ Instruction: ${customPrompt}
         // Return a text stream directly
         return result.toTextStreamResponse();
 
-    } catch (error) {
-        console.error("Cerebras API Error:", error);
-        return new Response(JSON.stringify({ error: "Failed to process content" }), {
+    } catch (error: any) {
+        console.error("Cerebras API Error detailed:", error?.message || error);
+        return new Response(JSON.stringify({ error: "Failed to process content", details: error?.message }), {
             status: 500,
             headers: { "Content-Type": "application/json" }
         });

@@ -96,20 +96,24 @@ export function WaveTransition({
         if (phase === "fade-in") {
             setLoaderVisible(false);
             setAnimationMode("in");
+            // Set progress to 0 FIRST — this means the mask is fully transparent
+            // so even when we make content "visible", nothing shows yet
             waveProgress.set(0);
+            setContentVisible(true);
             
+            // Wait two frames to ensure the mask is painted before animating
             requestAnimationFrame(() => {
-                setContentVisible(true);
-                
-                // Animate from 0 to 100 (wipe in from top-left to bottom-right)
-                const controls = animate(waveProgress, 100, {
-                    duration: 0.6,
-                    ease: [0.4, 0, 0.2, 1],
-                    onComplete: () => {
-                        waveProgress.set(0);
-                        setAnimationMode("out");
-                        onPhaseComplete?.("fade-in");
-                    }
+                requestAnimationFrame(() => {
+                    // Now animate from 0 to 100 (wipe in from top-left to bottom-right)
+                    const controls = animate(waveProgress, 100, {
+                        duration: 0.6,
+                        ease: [0.4, 0, 0.2, 1],
+                        onComplete: () => {
+                            waveProgress.set(0);
+                            setAnimationMode("out");
+                            onPhaseComplete?.("fade-in");
+                        }
+                    });
                 });
             });
         }
